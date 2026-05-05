@@ -40,6 +40,16 @@ export class FavoritesService {
       .order('created_at', { ascending: false });
 
     if (error) throw new BadRequestException(error.message);
-    return data;
+    return data?.map((fav: any) => ({
+      ...fav,
+      posts: fav.posts
+        ? {
+            ...fav.posts,
+            whatsapp_link: fav.posts.whatsapp
+              ? `https://wa.me/55${fav.posts.whatsapp}`
+              : null,
+          }
+        : null,
+    }));
   }
 }

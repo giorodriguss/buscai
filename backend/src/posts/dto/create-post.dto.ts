@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsArray,
-  IsInt,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   IsUUID,
@@ -13,30 +13,33 @@ export class CreatePostDto {
   @ApiProperty({ example: 'Encanador residencial' })
   @IsString()
   @IsNotEmpty()
-  title: string;
+  title!: string;
 
   @ApiProperty({ example: 'Serviços de encanamento em geral', required: false })
   @IsString()
   @IsOptional()
   description?: string;
 
-  @ApiProperty({ example: 1 })
-  @IsInt()
-  @Min(1)
-  category_id: number;
+  @ApiProperty({ example: 'uuid-da-categoria' })
+  @IsUUID()
+  category_id!: string;
 
-  @ApiProperty({ example: 50, required: false })
+  @ApiProperty({ example: 50, required: false, minimum: 0 })
+  @IsNumber()
+  @Min(0)
   @IsOptional()
   price_from?: number;
 
-  @ApiProperty({ example: 200, required: false })
+  @ApiProperty({ example: 200, required: false, minimum: 0 })
+  @IsNumber()
+  @Min(0)
   @IsOptional()
   price_to?: number;
 
   @ApiProperty({ example: '11999999999' })
   @IsString()
   @IsNotEmpty()
-  whatsapp: string;
+  whatsapp!: string;
 
   @ApiProperty({ example: 'Centro', required: false })
   @IsString()

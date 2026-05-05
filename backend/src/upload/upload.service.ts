@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 
 @Injectable()
@@ -36,7 +36,6 @@ export class UploadService {
     file: Express.Multer.File,
     caption?: string,
   ) {
-    // Verify post ownership
     const { data: post } = await this.supabase
       .getAdminClient()
       .from('posts')
@@ -45,9 +44,8 @@ export class UploadService {
       .single();
 
     if (!post) throw new NotFoundException('Post não encontrado');
-    if (post.user_id !== userId) throw new BadRequestException('Sem permissão');
+    if (post.user_id !== userId) throw new ForbiddenException('Sem permissão');
 
-    // Check max_photos limit
     const { data: sub } = await this.supabase
       .getAdminClient()
       .from('subscriptions')
@@ -100,7 +98,6 @@ export class UploadService {
   }
 
   async deletePostPhoto(photoId: string, userId: string) {
-    // Verify ownership via post
     const { data: photo } = await this.supabase
       .getAdminClient()
       .from('post_photos')
@@ -111,7 +108,7 @@ export class UploadService {
     if (!photo) throw new NotFoundException('Foto não encontrada');
 
     const postOwner = (photo as any).posts?.user_id;
-    if (postOwner !== userId) throw new BadRequestException('Sem permissão');
+    if (postOwner !== userId) throw new ForbiddenException('Sem permissão');
 
     const { error } = await this.supabase
       .getAdminClient()
@@ -121,5 +118,53 @@ export class UploadService {
 
     if (error) throw new BadRequestException(error.message);
     return { message: 'Foto removida' };
+  }
+
+  async uploadPortfolioImage(userId: string, file: Express.Multer.File) {
+    const ext = file.originalname.split('.').pop();
+    const path = `portfolio/${userId}/${Date.now()}.${ext}`;
+
+    const { error: storageError } = await this.supabase
+      .getAdminClient()
+      .storage.from('buscai')
+      .upload(path, file.buffer, { contentType: file.mimetype });
+
+    if (storageError) throw new BadRequestException(storageError.message);
+
+    const { data: urlData } = this.supabase
+      .getAdminClient()
+      .storage.from('buscai')
+      .getPublicUrl(path);
+
+    const { data, error } = await this.supabase
+      .getAdminClient()
+      .from('portfolio_images')
+      .insert({ provider_id: userId, url: urlData.publicUrl })
+      .select()
+      .single();
+
+    if (error) throw new BadRequestException(error.message);
+    return data;
+  }
+
+  async deletePortfolioImage(imageId: string, userId: string) {
+    const { data: image } = await this.supabase
+      .getAdminClient()
+      .from('portfolio_images')
+      .select('provider_id')
+      .eq('id', imageId)
+      .single();
+
+    if (!image) throw new NotFoundException('Imagem não encontrada');
+    if (image.provider_id !== userId) throw new ForbiddenException('Sem permissão');
+
+    const { error } = await this.supabase
+      .getAdminClient()
+      .from('portfolio_images')
+      .delete()
+      .eq('id', imageId);
+
+    if (error) throw new BadRequestException(error.message);
+    return { message: 'Imagem removida' };
   }
 }
