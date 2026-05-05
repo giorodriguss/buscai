@@ -1,9 +1,11 @@
-import { Controller, Get } from '@nestjs/common';
+import { CacheInterceptor } from '@nestjs/cache-manager';
+import { Controller, Get, UseInterceptors } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { TagsService } from './tags.service';
 
 @ApiTags('Tags')
 @Controller('tags')
+@UseInterceptors(CacheInterceptor)
 export class TagsController {
   constructor(private tagsService: TagsService) {}
 

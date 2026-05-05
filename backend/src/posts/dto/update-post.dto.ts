@@ -1,12 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsArray,
-  IsInt,
   IsNotEmpty,
   IsOptional,
   IsString,
   IsUUID,
-  Min,
 } from 'class-validator';
 
 export class UpdatePostDto {
@@ -22,10 +20,9 @@ export class UpdatePostDto {
   description?: string;
 
   @ApiProperty({ required: false })
-  @IsInt()
-  @Min(1)
+  @IsUUID()
   @IsOptional()
-  category_id?: number;
+  category_id?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()

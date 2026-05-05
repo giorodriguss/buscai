@@ -47,4 +47,18 @@ export class UploadController {
   deletePostPhoto(@Param('photoId') photoId: string, @Request() req: any) {
     return this.uploadService.deletePostPhoto(photoId, req.user.id);
   }
+
+  @Post('portfolio')
+  @ApiOperation({ summary: 'Upload de imagem para portfólio do prestador' })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadPortfolio(@Request() req: any, @UploadedFile() file: Express.Multer.File) {
+    return this.uploadService.uploadPortfolioImage(req.user.id, file);
+  }
+
+  @Delete('portfolio/:imageId')
+  @ApiOperation({ summary: 'Remover imagem do portfólio' })
+  deletePortfolio(@Param('imageId') imageId: string, @Request() req: any) {
+    return this.uploadService.deletePortfolioImage(imageId, req.user.id);
+  }
 }

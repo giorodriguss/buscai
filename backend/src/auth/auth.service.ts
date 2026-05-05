@@ -21,7 +21,6 @@ export class AuthService {
       .auth.admin.createUser({
         email: dto.email,
         password: dto.password,
-        email_confirm: true,
       });
 
     if (authError) throw new BadRequestException(authError.message);
@@ -49,10 +48,8 @@ export class AuthService {
       .from('subscriptions')
       .insert({ user_id: userId, plan: 'free' });
 
-    const token = this.jwt.sign({ sub: userId, email: dto.email });
-
     return {
-      access_token: token,
+      message: 'Cadastro realizado. Verifique seu e-mail para ativar a conta.',
       user: { id: userId, email: dto.email, full_name: dto.full_name, role: dto.role },
     };
   }
@@ -62,7 +59,14 @@ export class AuthService {
       .getClient()
       .auth.signInWithPassword({ email: dto.email, password: dto.password });
 
-    if (error || !data.user) throw new UnauthorizedException('Credenciais inválidas');
+    if (error) {
+      const msg = error.message.toLowerCase();
+      if (msg.includes('email not confirmed')) {
+        throw new UnauthorizedException('Confirme seu e-mail antes de fazer login');
+      }
+      throw new UnauthorizedException('Credenciais inválidas');
+    }
+    if (!data.user) throw new UnauthorizedException('Credenciais inválidas');
 
     const { data: user } = await this.supabase
       .getAdminClient()

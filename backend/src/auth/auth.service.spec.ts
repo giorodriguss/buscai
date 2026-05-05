@@ -60,7 +60,7 @@ describe('AuthService', () => {
       role: 'morador' as const,
     };
 
-    it('cria usuário e retorna access_token', async () => {
+    it('cria usuário e retorna mensagem de verificação de e-mail', async () => {
       adminClient.auth.admin.createUser.mockResolvedValue({
         data: { user: { id: 'uid-1' } },
         error: null,
@@ -71,9 +71,9 @@ describe('AuthService', () => {
 
       const result = await service.register(dto);
 
-      expect(result.access_token).toBe('mock-token');
+      expect(result.message).toContain('Verifique seu e-mail');
       expect(result.user).toMatchObject({ id: 'uid-1', email: dto.email, full_name: dto.full_name });
-      expect(jwtSign).toHaveBeenCalledWith({ sub: 'uid-1', email: dto.email });
+      expect(jwtSign).not.toHaveBeenCalled();
     });
 
     it('cria assinatura free automaticamente após o cadastro', async () => {
