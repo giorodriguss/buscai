@@ -40,6 +40,14 @@ export class ProvidersController {
     return this.providersService.findAll(query);
   }
 
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Meu perfil de prestador' })
+  findMe(@Request() req: any) {
+    return this.providersService.findMe(req.user.id);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Detalhes de um prestador' })
   findOne(@Param('id') id: string) {

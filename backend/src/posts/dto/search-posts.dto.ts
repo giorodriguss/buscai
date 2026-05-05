@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsOptional, IsString, Min } from 'class-validator';
+import { IsInt, IsOptional, IsString, IsUUID, Max, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class SearchPostsDto {
@@ -9,11 +9,9 @@ export class SearchPostsDto {
   q?: string;
 
   @ApiProperty({ required: false })
-  @IsInt()
-  @Min(1)
+  @IsUUID()
   @IsOptional()
-  @Type(() => Number)
-  category_id?: number;
+  category_id?: string;
 
   @ApiProperty({ required: false })
   @IsString()
@@ -37,9 +35,10 @@ export class SearchPostsDto {
   @Type(() => Number)
   page?: number = 1;
 
-  @ApiProperty({ required: false, default: 20 })
+  @ApiProperty({ required: false, default: 20, maximum: 100 })
   @IsInt()
   @Min(1)
+  @Max(100)
   @IsOptional()
   @Type(() => Number)
   limit?: number = 20;
