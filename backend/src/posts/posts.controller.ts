@@ -16,17 +16,22 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { SearchPostsDto } from './dto/search-posts.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { ValidCategoryPipe } from '../pipes/valid-category.pipe';
 
 @ApiTags('Posts')
 @Controller('posts')
 export class PostsController {
-  constructor(private postsService: PostsService) {}
+  constructor(
+    private postsService: PostsService,
+    private categoryPipe: ValidCategoryPipe,
+  ) {}
 
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Criar novo post de serviço' })
-  create(@Request() req: any, @Body() dto: CreatePostDto) {
+  async create(@Request() req: any, @Body() dto: CreatePostDto) {
+    await this.categoryPipe.transform(dto.category_id, { type: 'body' });
     return this.postsService.create(req.user.id, dto);
   }
 
@@ -54,7 +59,10 @@ export class PostsController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Atualizar post (somente dono)' })
-  update(@Param('id') id: string, @Request() req: any, @Body() dto: UpdatePostDto) {
+  async update(@Param('id') id: string, @Request() req: any, @Body() dto: UpdatePostDto) {
+    if (dto.category_id) {
+      await this.categoryPipe.transform(dto.category_id, { type: 'body' });
+    }
     return this.postsService.update(id, req.user.id, dto);
   }
 
