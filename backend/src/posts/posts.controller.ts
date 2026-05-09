@@ -16,7 +16,7 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { SearchPostsDto } from './dto/search-posts.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { ValidCategoryPipe } from '../pipes/valid-category.pipe';
+import { ValidCategoryPipe } from '../common/pipes/valid-category.pipe';
 
 @ApiTags('Posts')
 @Controller('posts')

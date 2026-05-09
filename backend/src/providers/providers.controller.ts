@@ -16,7 +16,7 @@ import { CreateProviderDto } from './dto/create-provider.dto';
 import { UpdateProviderDto } from './dto/update-provider.dto';
 import { SearchProvidersDto } from './dto/search-providers.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { ValidCategoryPipe } from '../pipes/valid-category.pipe';
+import { ValidCategoryPipe } from '../common/pipes/valid-category.pipe';
 
 @ApiTags('Providers')
 @Controller('providers')
