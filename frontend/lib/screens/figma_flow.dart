@@ -100,6 +100,21 @@ class ServiceHistoryItem {
   });
 }
 
+// Avaliacao feita pelo usuario para um item do historico local.
+class UserServiceReview {
+  final ServiceHistoryItem item;
+  final int rating;
+  final String comment;
+  final String reviewedAt;
+
+  const UserServiceReview({
+    required this.item,
+    required this.rating,
+    required this.comment,
+    required this.reviewedAt,
+  });
+}
+
 // Fonte de verdade temporaria para a visao de usuario.
 // Futuro backend: substituir por AuthProvider/Repository com dados vindos da API.
 class AppSession {
@@ -107,9 +122,28 @@ class AppSession {
   // de autenticação/API (usuário logado, favoritos, histórico e endereços).
   static AppUser? currentUser;
   static int selectedAddress = 0;
+  static bool notificationsEnabled = true;
+  static bool serviceUpdatesEnabled = true;
+  static bool promotionsEnabled = false;
+  static bool profileVisible = true;
+  static bool shareLocation = true;
+  static bool biometricLogin = false;
   static final favoriteProviderIds = <String>{};
   static final history = <ServiceHistoryItem>[];
+  static final userReviews = <UserServiceReview>[];
   static final savedAddresses = <_SavedAddress>[..._defaultAddresses()];
+
+  static UserServiceReview? reviewFor(ServiceHistoryItem item) {
+    for (final review in userReviews) {
+      if (identical(review.item, item)) return review;
+    }
+    return null;
+  }
+
+  static void saveReview(UserServiceReview review) {
+    userReviews.removeWhere((item) => identical(item.item, review.item));
+    userReviews.insert(0, review);
+  }
 
   static List<_SavedAddress> _defaultAddresses() => const [
         _SavedAddress(
@@ -130,10 +164,17 @@ class AppSession {
     currentUser = null;
     favoriteProviderIds.clear();
     history.clear();
+    userReviews.clear();
     savedAddresses
       ..clear()
       ..addAll(_defaultAddresses());
     selectedAddress = 0;
+    notificationsEnabled = true;
+    serviceUpdatesEnabled = true;
+    promotionsEnabled = false;
+    profileVisible = true;
+    shareLocation = true;
+    biometricLogin = false;
   }
 }
 
@@ -179,7 +220,8 @@ class PhoneInputFormatter extends TextInputFormatter {
   const PhoneInputFormatter();
 
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
     // O usuário digita só números; o campo mostra automaticamente 00 90000-0000.
     final digits = newValue.text.replaceAll(RegExp(r'\D'), '');
     final limited = digits.length > 11 ? digits.substring(0, 11) : digits;
@@ -251,8 +293,10 @@ const mockProviders = [
     rating: 4.8,
     reviewCount: 127,
     distance: '0.5 km',
-    image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=300&h=300&fit=crop',
-    coverImage: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=800',
+    image:
+        'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=300&h=300&fit=crop',
+    coverImage:
+        'https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=800',
     about:
         'Profissional com mais de 10 anos de experiência em manutenção hidráulica residencial e comercial. Atendimento rápido e garantia em todos os serviços.',
     phone: '5511999999999',
@@ -298,8 +342,10 @@ const mockProviders = [
     pricePerHour: 95,
     priceRange: 'R\$ 90-180',
     yearsExperience: 6,
-    image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300&h=300&fit=crop',
-    coverImage: 'https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=800',
+    image:
+        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300&h=300&fit=crop',
+    coverImage:
+        'https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=800',
     about:
         'Eletricista certificada, especialista em instalações elétricas e manutenção preventiva. Trabalho com segurança e qualidade.',
     phone: '5511988888888',
@@ -333,8 +379,10 @@ const mockProviders = [
     pricePerHour: 120,
     priceRange: 'R\$ 200-800',
     yearsExperience: 15,
-    image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=300&fit=crop',
-    coverImage: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=800',
+    image:
+        'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=300&fit=crop',
+    coverImage:
+        'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=800',
     about:
         '15 anos de experiência em pintura residencial e comercial. Acabamento perfeito garantido.',
     phone: '5511977777777',
@@ -373,8 +421,10 @@ const mockProviders = [
     pricePerHour: 60,
     priceRange: 'R\$ 50-100',
     yearsExperience: 8,
-    image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&h=300&fit=crop',
-    coverImage: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=800',
+    image:
+        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&h=300&fit=crop',
+    coverImage:
+        'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=800',
     about:
         'Manicure e pedicure profissional. Atendo em domicílio com todos os cuidados de higiene.',
     phone: '5511966666666',
@@ -408,8 +458,10 @@ const mockProviders = [
     pricePerHour: 110,
     priceRange: 'R\$ 100-300',
     yearsExperience: 12,
-    image: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=300&h=300&fit=crop',
-    coverImage: 'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800',
+    image:
+        'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=300&h=300&fit=crop',
+    coverImage:
+        'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800',
     about:
         'Mecânico automotivo com oficina própria. Especialista em revisão e manutenção de veículos.',
     phone: '5511955555555',
@@ -418,7 +470,9 @@ const mockProviders = [
       Service(id: '2', name: 'Alinhamento e balanceamento', price: 120),
       Service(id: '3', name: 'Troca de pastilha de freio', price: 200),
     ],
-    portfolio: ['https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400'],
+    portfolio: [
+      'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400'
+    ],
     availableHours: ['08:00', '09:00', '10:00', '13:00', '14:00'],
     reviews: [],
   ),
@@ -432,8 +486,10 @@ const mockProviders = [
     pricePerHour: 80,
     priceRange: 'R\$ 50-200',
     yearsExperience: 9,
-    image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&h=300&fit=crop',
-    coverImage: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800',
+    image:
+        'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&h=300&fit=crop',
+    coverImage:
+        'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800',
     about:
         'Cabeleireira especializada em cortes modernos, coloração e tratamentos capilares.',
     phone: '5511944444444',
@@ -460,8 +516,10 @@ const mockProviders = [
     pricePerHour: 100,
     priceRange: 'R\$ 150-1000',
     yearsExperience: 18,
-    image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=300&h=300&fit=crop',
-    coverImage: 'https://images.unsplash.com/photo-1513828583688-c52646db42da?w=800',
+    image:
+        'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=300&h=300&fit=crop',
+    coverImage:
+        'https://images.unsplash.com/photo-1513828583688-c52646db42da?w=800',
     about:
         'Marceneiro especialista em móveis planejados e reformas. Trabalho com madeira de qualidade.',
     phone: '5511933333333',
@@ -469,7 +527,9 @@ const mockProviders = [
       Service(id: '1', name: 'Prateleira sob medida', price: 300),
       Service(id: '2', name: 'Armário planejado', price: 1500),
     ],
-    portfolio: ['https://images.unsplash.com/photo-1513828583688-c52646db42da?w=400'],
+    portfolio: [
+      'https://images.unsplash.com/photo-1513828583688-c52646db42da?w=400'
+    ],
     availableHours: ['08:00', '13:00', '14:00'],
     reviews: [],
   ),
@@ -483,8 +543,10 @@ const mockProviders = [
     pricePerHour: 70,
     priceRange: 'R\$ 120-180',
     yearsExperience: 5,
-    image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&h=300&fit=crop',
-    coverImage: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800',
+    image:
+        'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&h=300&fit=crop',
+    coverImage:
+        'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800',
     about:
         'Diarista profissional com experiência em limpeza residencial. Trabalho com produtos próprios.',
     phone: '5511922222222',
