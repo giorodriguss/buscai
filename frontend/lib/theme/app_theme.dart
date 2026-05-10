@@ -15,8 +15,9 @@ class AppColors {
 }
 
 class AppTextStyles {
+  // Cormorant Garamond — display/títulos
   static const TextStyle displayLarge = TextStyle(
-    fontFamily: 'Georgia',
+    fontFamily: 'CormorantGaramond',
     fontSize: 56,
     fontWeight: FontWeight.w700,
     letterSpacing: -2,
@@ -25,15 +26,16 @@ class AppTextStyles {
   );
 
   static const TextStyle displayMedium = TextStyle(
-    fontFamily: 'Georgia',
+    fontFamily: 'CormorantGaramond',
     fontSize: 36,
     fontWeight: FontWeight.w700,
     letterSpacing: -1,
     color: AppColors.branco,
   );
 
+  // DM Sans — corpo
   static const TextStyle bodyLarge = TextStyle(
-    fontFamily: 'Georgia',
+    fontFamily: 'DMSans',
     fontSize: 16,
     fontWeight: FontWeight.w300,
     height: 1.7,
@@ -41,14 +43,15 @@ class AppTextStyles {
   );
 
   static const TextStyle bodyMedium = TextStyle(
-    fontFamily: 'Georgia',
+    fontFamily: 'DMSans',
     fontSize: 14,
     fontWeight: FontWeight.w400,
     color: AppColors.cinza,
   );
 
+  // DM Mono — eyebrow/labels
   static const TextStyle mono = TextStyle(
-    fontFamily: 'Georgia',
+    fontFamily: 'DMMono',
     fontSize: 10,
     fontWeight: FontWeight.w400,
     letterSpacing: 3,
@@ -58,10 +61,6 @@ class AppTextStyles {
 
 class AppTheme {
   static ThemeData get theme {
-    final base = ThemeData(
-      useMaterial3: true,
-      fontFamily: 'Georgia',
-    );
     return ThemeData(
       useMaterial3: true,
       scaffoldBackgroundColor: AppColors.papel,
@@ -70,18 +69,7 @@ class AppTheme {
         secondary: AppColors.laranja,
         surface: AppColors.papel,
       ),
-      fontFamily: 'Georgia',
-      textTheme: base.textTheme.apply(fontFamily: 'Georgia'),
-      primaryTextTheme: base.primaryTextTheme.apply(fontFamily: 'Georgia'),
-      textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          foregroundColor: AppColors.laranja,
-          textStyle: const TextStyle(fontFamily: 'Georgia', fontWeight: FontWeight.w600),
-        ),
-      ),
-      inputDecorationTheme: const InputDecorationTheme(
-        hintStyle: TextStyle(fontFamily: 'Georgia'),
-      ),
+      fontFamily: 'DMSans',
     );
   }
 }
