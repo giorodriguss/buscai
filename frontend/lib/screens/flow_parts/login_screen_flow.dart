@@ -1,5 +1,6 @@
 part of '../figma_flow.dart';
 
+<<<<<<< HEAD
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -8,6 +9,16 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
+=======
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+>>>>>>> origin/develop
   bool _forgotPassword = false;
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
@@ -35,8 +46,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       loginFailed = false;
     });
     try {
+<<<<<<< HEAD
       final user = await AuthRepository.login(email: email, password: password);
       ref.read(sessionProvider.notifier).setUser(user);
+=======
+      final result = await AuthApiService.instance.login(
+        email: email,
+        password: password,
+      );
+      final user = AppUser.fromApi(result['user'] as Map<String, dynamic>);
+      AppSession.currentUser = user;
+>>>>>>> origin/develop
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => MainShell(user: user)),
@@ -58,8 +78,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     if (_forgotPassword) {
+<<<<<<< HEAD
       return ForgotPasswordPage(
         onBack: () => setState(() => _forgotPassword = false),
+=======
+      return AuthPage(
+        centered: true,
+        logoSize: 112,
+        title: 'Recuperar senha',
+        subtitle: 'Digite seu e-mail para receber o link de recuperação',
+        fields: const [
+          FieldSpec(Icons.mail_outline_rounded, 'Seu e-mail', TextInputType.emailAddress, false),
+        ],
+        primaryLabel: 'Enviar link',
+        onPrimary: () => setState(() => _forgotPassword = false),
+        footer: TextButton(
+          onPressed: () => setState(() => _forgotPassword = false),
+          child: const Text(
+            'Voltar para login',
+            style: TextStyle(color: BColors.orange, fontFamily: 'Georgia'),
+          ),
+        ),
+>>>>>>> origin/develop
       );
     }
 

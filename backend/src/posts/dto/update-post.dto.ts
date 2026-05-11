@@ -6,6 +6,7 @@ import {
   IsString,
   IsUUID,
 } from 'class-validator';
+import { IsWhatsApp } from '../../common/validators/is-whatsapp.validator';
 
 export class UpdatePostDto {
   @ApiProperty({ required: false })
@@ -32,8 +33,9 @@ export class UpdatePostDto {
   @IsOptional()
   price_to?: number;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ example: '11999999999', required: false, description: 'Número brasileiro com DDD, somente dígitos' })
   @IsString()
+  @IsWhatsApp()
   @IsOptional()
   whatsapp?: string;
 

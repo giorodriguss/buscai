@@ -21,6 +21,7 @@ import { ProvidersModule } from './providers/providers.module';
 
 @Module({
   imports: [
+<<<<<<< HEAD
     ConfigModule.forRoot({
       isGlobal: true,
       validationSchema: envValidationSchema,
@@ -32,6 +33,12 @@ import { ProvidersModule } from './providers/providers.module';
     // Global rate limit: 120 req / min por IP (proteção geral)
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
 
+=======
+    ConfigModule.forRoot({ isGlobal: true }),
+
+    CacheModule.register({ isGlobal: true, ttl: 5 * 60 * 1000 }),
+
+>>>>>>> origin/develop
     SupabaseModule,
     AuthModule,
     UsersModule,

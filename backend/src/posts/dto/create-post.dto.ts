@@ -9,6 +9,7 @@ import {
   MaxLength,
   Min,
 } from 'class-validator';
+import { IsWhatsApp } from '../../common/validators/is-whatsapp.validator';
 
 export class CreatePostDto {
   @ApiProperty({ example: 'Encanador residencial' })
@@ -39,9 +40,10 @@ export class CreatePostDto {
   @IsOptional()
   price_to?: number;
 
-  @ApiProperty({ example: '11999999999' })
+  @ApiProperty({ example: '11999999999', description: 'Número brasileiro com DDD, somente dígitos' })
   @IsString()
   @IsNotEmpty()
+  @IsWhatsApp()
   whatsapp!: string;
 
   @ApiProperty({ example: 'Centro', required: false })

@@ -1,19 +1,40 @@
 part of '../figma_flow.dart';
 
+<<<<<<< HEAD
 class ProviderProfileScreen extends ConsumerStatefulWidget {
+=======
+class ProviderProfileScreen extends StatefulWidget {
+>>>>>>> origin/develop
   final Provider provider;
 
   const ProviderProfileScreen({super.key, required this.provider});
 
   @override
+<<<<<<< HEAD
   ConsumerState<ProviderProfileScreen> createState() => _ProviderProfileScreenState();
 }
 
 class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen> {
+=======
+  State<ProviderProfileScreen> createState() => _ProviderProfileScreenState();
+}
+
+class _ProviderProfileScreenState extends State<ProviderProfileScreen> {
+  bool favorite = false;
+>>>>>>> origin/develop
   String? selectedService;
   String? selectedHour;
   int selectedDate = 0;
 
+<<<<<<< HEAD
+=======
+  @override
+  void initState() {
+    super.initState();
+    favorite = AppSession.favoriteProviderIds.contains(widget.provider.id);
+  }
+
+>>>>>>> origin/develop
   void _handlePrimaryAction() {
     final provider = widget.provider;
     Service? service;
@@ -24,7 +45,12 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen> {
       }
     }
     if (service != null && selectedHour != null) {
+<<<<<<< HEAD
       ref.read(sessionProvider.notifier).addHistoryItem(
+=======
+      AppSession.history.insert(
+        0,
+>>>>>>> origin/develop
         ServiceHistoryItem(
           provider: provider,
           service: service,
@@ -48,7 +74,10 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = widget.provider;
+<<<<<<< HEAD
     final isFav = ref.watch(sessionProvider).favoriteProviderIds.contains(provider.id);
+=======
+>>>>>>> origin/develop
 
     return Scaffold(
       backgroundColor: BColors.paper,
@@ -163,21 +192,44 @@ class _ProviderProfileScreenState extends ConsumerState<ProviderProfileScreen> {
                     ),
                     const SizedBox(width: 12),
                     GestureDetector(
+<<<<<<< HEAD
                       onTap: () => ref.read(sessionProvider.notifier).toggleFavorite(provider.id),
+=======
+                      onTap: () => setState(() {
+                        favorite = !favorite;
+                        if (favorite) {
+                          AppSession.favoriteProviderIds.add(provider.id);
+                        } else {
+                          AppSession.favoriteProviderIds.remove(provider.id);
+                        }
+                      }),
+>>>>>>> origin/develop
                       child: Container(
                         width: 52,
                         height: 52,
                         decoration: BoxDecoration(
+<<<<<<< HEAD
                           color: isFav ? BColors.orange : Colors.transparent,
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: isFav ? BColors.orange : BColors.green,
+=======
+                          color: favorite ? BColors.orange : Colors.transparent,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: favorite ? BColors.orange : BColors.green,
+>>>>>>> origin/develop
                             width: 2,
                           ),
                         ),
                         child: Icon(
+<<<<<<< HEAD
                           isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
                           color: isFav ? Colors.white : BColors.green,
+=======
+                          favorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                          color: favorite ? Colors.white : BColors.green,
+>>>>>>> origin/develop
                         ),
                       ),
                     ),
@@ -296,3 +348,9 @@ class NotificationsScreen extends StatelessWidget {
     );
   }
 }
+<<<<<<< HEAD
+=======
+
+// Perfil do usuario comum. Favoritos, historico e enderecos vem da AppSession,
+// entao qualquer acao feita no front aparece aqui na mesma sessao.
+>>>>>>> origin/develop

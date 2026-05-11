@@ -3,7 +3,10 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+<<<<<<< HEAD
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+=======
+>>>>>>> origin/develop
 import '../services/auth_service.dart';
 import '../services/providers_service.dart';
 import '../services/favorites_service.dart';
@@ -20,8 +23,11 @@ part 'flow_parts/search_screen_flow.dart';
 part 'flow_parts/provider_profile_screen_flow.dart';
 part 'flow_parts/profile_screen_flow.dart';
 part 'flow_parts/collaborator_state_flow.dart';
+<<<<<<< HEAD
 part 'flow_parts/session_provider_flow.dart';
 part 'flow_parts/collaborator_provider_flow.dart';
+=======
+>>>>>>> origin/develop
 part 'flow_parts/collaborator_screen_flow.dart';
 part 'flow_parts/edit_provider_profile_screen_flow.dart';
 part 'flow_parts/availability_screens_flow.dart';
@@ -29,15 +35,23 @@ part 'flow_parts/portfolio_manager_screen_flow.dart';
 part 'flow_parts/favorites_screen_flow.dart';
 part 'flow_parts/category_selection_screen_flow.dart';
 part 'flow_parts/address_screens_flow.dart';
+<<<<<<< HEAD
 part 'flow_parts/repositories_flow.dart';
+=======
+>>>>>>> origin/develop
 part 'flow_parts/shared_widgets_flow.dart';
 
 // Arquivo central do prototipo Buscaí.
 //
 // IMPORTANTE PARA QUEM CONTINUAR:
 // - Esse fluxo ainda e 100% frontend, sem banco/API.
+<<<<<<< HEAD
 // - Os dados que "persistem" vivem nos providers sessionProvider e
 //   collaboratorProvider (Riverpod). Ao recarregar o app, tudo volta ao estado inicial.
+=======
+// - Os dados que "persistem" vivem em memoria nas classes AppSession e
+//   CollaboratorState. Ao recarregar o app, tudo volta ao estado inicial.
+>>>>>>> origin/develop
 // - Os comentarios marcados como "Futuro backend" mostram os pontos naturais
 //   para trocar mock/local state por chamadas reais da API.
 // - A fonte Georgia e aplicada nos widgets deste arquivo para manter o visual
@@ -142,6 +156,45 @@ class ServiceHistoryItem {
   });
 }
 
+<<<<<<< HEAD
+=======
+// Fonte de verdade temporaria para a visao de usuario.
+// Futuro backend: substituir por AuthProvider/Repository com dados vindos da API.
+class AppSession {
+  // Estado temporário do front. Quando existir backend, isso deve sair daqui e vir
+  // de autenticação/API (usuário logado, favoritos, histórico e endereços).
+  static AppUser? currentUser;
+  static int selectedAddress = 0;
+  static final favoriteProviderIds = <String>{};
+  static final history = <ServiceHistoryItem>[];
+  static final savedAddresses = <_SavedAddress>[..._defaultAddresses()];
+
+  static List<_SavedAddress> _defaultAddresses() => const [
+        _SavedAddress(
+          type: 'Casa',
+          title: 'Casa',
+          subtitle: 'Rua das Flores, 123 - Vila Madalena,\nSão Paulo',
+          icon: Icons.home_outlined,
+        ),
+        _SavedAddress(
+          type: 'Trabalho',
+          title: 'Trabalho',
+          subtitle: 'Av. Paulista, 1000 - Bela Vista, São\nPaulo',
+          icon: Icons.work_outline_rounded,
+        ),
+      ];
+
+  static void reset() {
+    currentUser = null;
+    favoriteProviderIds.clear();
+    history.clear();
+    savedAddresses
+      ..clear()
+      ..addAll(_defaultAddresses());
+    selectedAddress = 0;
+  }
+}
+>>>>>>> origin/develop
 
 // Validacoes iguais para cadastro comum e cadastro de prestador.
 // Hoje exigimos email terminando em .com porque foi a regra pedida no prototipo.

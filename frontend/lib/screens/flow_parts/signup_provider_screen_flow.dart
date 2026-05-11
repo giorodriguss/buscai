@@ -1,5 +1,6 @@
 part of '../figma_flow.dart';
 
+<<<<<<< HEAD
 class SignupProviderScreen extends ConsumerStatefulWidget {
   const SignupProviderScreen({super.key});
 
@@ -9,12 +10,23 @@ class SignupProviderScreen extends ConsumerStatefulWidget {
 
 class _SignupProviderScreenState extends ConsumerState<SignupProviderScreen>
     with DebouncedValidationMixin {
+=======
+class SignupProviderScreen extends StatefulWidget {
+  const SignupProviderScreen({super.key});
+
+  @override
+  State<SignupProviderScreen> createState() => _SignupProviderScreenState();
+}
+
+class _SignupProviderScreenState extends State<SignupProviderScreen> {
+>>>>>>> origin/develop
   final nameController = TextEditingController();
   final emailController = TextEditingController();
   final phoneController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
   final validation = <String>{};
+<<<<<<< HEAD
   late String selectedCategory;
 
   String? get emailError => FormValidators.email(emailController.text.trim());
@@ -24,25 +36,80 @@ class _SignupProviderScreenState extends ConsumerState<SignupProviderScreen>
       FormValidators.confirmPassword(confirmPasswordController.text, passwordController.text);
 
   void _showValidation(String field) => setState(() => validation.add(field));
+=======
+  Timer? validationDebounce;
+  String selectedCategory = CollaboratorState.category;
+
+  String? get emailError {
+    final value = emailController.text.trim();
+    if (value.isEmpty || _isValidEmail(value)) return null;
+    return 'Use um e-mail válido no formato nome@email.com';
+  }
+
+  String? get phoneError {
+    final value = phoneController.text.trim();
+    if (value.isEmpty || _isValidPhone(value)) return null;
+    return 'Use o formato 00 90000-0000';
+  }
+
+  String? get passwordError {
+    final value = passwordController.text;
+    if (value.isEmpty || (value.length >= 6 && value.length <= 12)) return null;
+    return 'A senha deve ter de 6 a 12 caracteres';
+  }
+
+  String? get confirmPasswordError {
+    final value = confirmPasswordController.text;
+    if (value.isEmpty || value == passwordController.text) return null;
+    return 'As senhas não conferem';
+  }
+>>>>>>> origin/develop
 
   @override
   void initState() {
     super.initState();
+<<<<<<< HEAD
     selectedCategory = ref.read(collaboratorProvider).category;
+=======
+    // Validação aparece depois que a pessoa sai do campo, não no primeiro caractere.
+  }
+
+  void _showValidation(String field) => setState(() => validation.add(field));
+
+  void _queueValidation(String field) {
+    // Mostra o erro so depois de uma pausa na digitacao, para nao assustar a
+    // pessoa no primeiro caractere. Backend deve reaproveitar esse feedback.
+    validationDebounce?.cancel();
+    validationDebounce = Timer(const Duration(milliseconds: 650), () {
+      if (mounted) _showValidation(field);
+    });
+>>>>>>> origin/develop
   }
 
   @override
   void dispose() {
+<<<<<<< HEAD
     cancelValidationDebounce();
+=======
+>>>>>>> origin/develop
     nameController.dispose();
     emailController.dispose();
     phoneController.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();
+<<<<<<< HEAD
+=======
+    validationDebounce?.cancel();
+>>>>>>> origin/develop
     super.dispose();
   }
 
   void _createProviderAccount() {
+<<<<<<< HEAD
+=======
+    // Futuro backend: aqui deve chamar o endpoint de cadastro de prestador e
+    // receber o perfil profissional já com categoria, bairro e disponibilidade.
+>>>>>>> origin/develop
     final name = nameController.text.trim();
     final email = emailController.text.trim();
     final phone = phoneController.text.trim();
@@ -83,8 +150,13 @@ class _SignupProviderScreenState extends ConsumerState<SignupProviderScreen>
       return;
     }
     final user = AppUser(name: name, email: email, phone: phone, isProvider: true);
+<<<<<<< HEAD
     ref.read(collaboratorProvider.notifier).reset(selectedCategory);
     ref.read(sessionProvider.notifier).setUser(user);
+=======
+    CollaboratorState.resetForNewProvider(selectedCategory);
+    AppSession.currentUser = user;
+>>>>>>> origin/develop
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (_) => MainShell(user: user)),
     );
@@ -153,7 +225,11 @@ class _SignupProviderScreenState extends ConsumerState<SignupProviderScreen>
               keyboardType: TextInputType.emailAddress,
               controller: emailController,
               errorText: validation.contains('email') ? emailError : null,
+<<<<<<< HEAD
               onChanged: (_) => queueValidation(validation, 'email'),
+=======
+              onChanged: (_) => _queueValidation('email'),
+>>>>>>> origin/develop
               onEditingComplete: () => _showValidation('email'),
             ),
             const SizedBox(height: 16),
@@ -164,15 +240,25 @@ class _SignupProviderScreenState extends ConsumerState<SignupProviderScreen>
               controller: phoneController,
               errorText: validation.contains('phone') ? phoneError : null,
               inputFormatters: const [PhoneInputFormatter()],
+<<<<<<< HEAD
               onChanged: (_) => queueValidation(validation, 'phone'),
+=======
+              onChanged: (_) => _queueValidation('phone'),
+>>>>>>> origin/develop
               onEditingComplete: () => _showValidation('phone'),
             ),
             const SizedBox(height: 16),
             const TextInputLike(icon: Icons.location_on_outlined, hint: 'Seu bairro'),
             const SizedBox(height: 16),
+<<<<<<< HEAD
             TextInputLike(icon: Icons.lock_outline_rounded, hint: 'Senha', obscure: true, controller: passwordController, errorText: validation.contains('password') ? passwordError : null, inputFormatters: [LengthLimitingTextInputFormatter(12)], onChanged: (_) => queueValidation(validation, 'password'), onEditingComplete: () => _showValidation('password')),
             const SizedBox(height: 16),
             TextInputLike(icon: Icons.lock_outline_rounded, hint: 'Confirmar senha', obscure: true, controller: confirmPasswordController, errorText: validation.contains('confirm') ? confirmPasswordError : null, inputFormatters: [LengthLimitingTextInputFormatter(12)], onChanged: (_) => queueValidation(validation, 'confirm'), onEditingComplete: () => _showValidation('confirm')),
+=======
+            TextInputLike(icon: Icons.lock_outline_rounded, hint: 'Senha', obscure: true, controller: passwordController, errorText: validation.contains('password') ? passwordError : null, inputFormatters: [LengthLimitingTextInputFormatter(12)], onChanged: (_) => _queueValidation('password'), onEditingComplete: () => _showValidation('password')),
+            const SizedBox(height: 16),
+            TextInputLike(icon: Icons.lock_outline_rounded, hint: 'Confirmar senha', obscure: true, controller: confirmPasswordController, errorText: validation.contains('confirm') ? confirmPasswordError : null, inputFormatters: [LengthLimitingTextInputFormatter(12)], onChanged: (_) => _queueValidation('confirm'), onEditingComplete: () => _showValidation('confirm')),
+>>>>>>> origin/develop
             const SizedBox(height: 32),
             PrimaryButton(
               label: 'Criar conta de prestador',
@@ -191,3 +277,9 @@ class _SignupProviderScreenState extends ConsumerState<SignupProviderScreen>
     );
   }
 }
+<<<<<<< HEAD
+=======
+
+// Estrutura com bottom navigation. A aba Colaborador so aparece quando o
+// usuario foi criado como prestador.
+>>>>>>> origin/develop

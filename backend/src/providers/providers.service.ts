@@ -11,7 +11,11 @@ import { SearchProvidersDto } from './dto/search-providers.dto';
 
 const PROVIDER_SELECT = `
   *,
+<<<<<<< HEAD
   users(id, full_name, avatar_url, phone, bio),
+=======
+  users(id, full_name, avatar_url),
+>>>>>>> origin/develop
   categories(id, name, icon_name, color_hex),
   post_photos(id, storage_url, sort_order),
   reviews(id, rating, comment, created_at, users(id, full_name, avatar_url))
@@ -26,8 +30,8 @@ export class ProvidersService {
   async create(userId: string, dto: CreateProviderDto) {
     const { data, error } = await this.supabase
       .getAdminClient()
-      .from('providers')
-      .insert({ id: userId, ...dto })
+      .from('posts')
+      .insert({ user_id: userId, status: 'ativo', ...dto })
       .select()
       .single();
 
@@ -78,7 +82,7 @@ export class ProvidersService {
 
       const { data, error } = await this.supabase
         .getAdminClient()
-        .from('providers')
+        .from('posts')
         .select(PROVIDER_SELECT)
         .in('id', ids);
 
@@ -101,10 +105,10 @@ export class ProvidersService {
     // Normal paginated query
     let req = this.supabase
       .getAdminClient()
-      .from('providers')
+      .from('posts')
       .select(PROVIDER_SELECT, { count: 'exact' })
-      .eq('is_active', true)
-      .order('rating_avg', { ascending: false })
+      .eq('status', 'ativo')
+      .order('created_at', { ascending: false })
       .range(from, to);
 
     if (neighborhood) {
@@ -139,15 +143,29 @@ export class ProvidersService {
     const { data, error } = await this.supabase
       .getAdminClient()
       .from('posts')
+<<<<<<< HEAD
       .select(PROVIDER_SELECT)
+=======
+      .select(`
+        *,
+        users(id, full_name, avatar_url, phone, bio),
+        categories(id, name, icon_name, color_hex),
+        post_photos(id, storage_url, sort_order),
+        reviews(id, rating, comment, created_at, users(id, full_name, avatar_url))
+      `)
+>>>>>>> origin/develop
       .eq('user_id', userId)
       .eq('status', 'ativo')
       .order('created_at', { ascending: false });
 
+<<<<<<< HEAD
     if (error) {
       this.logger.error(`Find provider me failed for user ${userId}: ${error.message}`);
       throw new NotFoundException('Perfil de prestador não encontrado');
     }
+=======
+    if (error) throw new NotFoundException('Perfil de prestador não encontrado');
+>>>>>>> origin/develop
     return data ?? [];
   }
 
@@ -155,9 +173,19 @@ export class ProvidersService {
     const { data, error } = await this.supabase
       .getAdminClient()
       .from('posts')
+<<<<<<< HEAD
       .select(PROVIDER_SELECT)
+=======
+      .select(`
+        *,
+        users(id, full_name, avatar_url, phone, bio),
+        categories(id, name, icon_name, color_hex),
+        post_photos(id, storage_url, sort_order),
+        reviews(id, rating, comment, created_at, users(id, full_name, avatar_url))
+      `)
+>>>>>>> origin/develop
       .eq('id', id)
-      .eq('is_active', true)
+      .eq('status', 'ativo')
       .single();
 
     if (error || !data) throw new NotFoundException('Prestador não encontrado');
@@ -166,10 +194,15 @@ export class ProvidersService {
 
   async update(userId: string, dto: UpdateProviderDto, token: string) {
     const { data, error } = await this.supabase
+<<<<<<< HEAD
       .getUserClient(token)
+=======
+      .getAdminClient()
+>>>>>>> origin/develop
       .from('posts')
       .update(dto)
-      .eq('id', userId)
+      .eq('user_id', userId)
+      .eq('status', 'ativo')
       .select()
       .single();
 
@@ -182,9 +215,16 @@ export class ProvidersService {
 
   async deactivate(token: string) {
     const { error } = await this.supabase
+<<<<<<< HEAD
       .getUserClient(token)
       .from('posts')
       .update({ status: 'inativo' });
+=======
+      .getAdminClient()
+      .from('posts')
+      .update({ status: 'inativo' })
+      .eq('user_id', userId);
+>>>>>>> origin/develop
 
     if (error) {
       this.logger.error(`Deactivate provider failed: ${error.message}`);

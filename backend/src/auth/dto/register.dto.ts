@@ -9,6 +9,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { IsWhatsApp } from '../../common/validators/is-whatsapp.validator';
 
 export class RegisterDto {
   @ApiProperty({ example: 'João Silva' })
@@ -30,8 +31,9 @@ export class RegisterDto {
   @IsIn(['morador', 'prestador'])
   role: 'morador' | 'prestador';
 
-  @ApiProperty({ example: '11999999999', required: false })
+  @ApiProperty({ example: '11999999999', required: false, description: 'Número brasileiro com DDD, somente dígitos' })
   @IsString()
+  @IsWhatsApp()
   @IsOptional()
   phone?: string;
 

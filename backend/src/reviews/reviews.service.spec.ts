@@ -12,12 +12,13 @@ function makeQB(resolved: { data?: any; error?: any; count?: any } = {}) {
   const qb: any = {
     select: jest.fn().mockReturnThis(),
     insert: jest.fn().mockReturnThis(),
+    update: jest.fn().mockReturnThis(),
     delete: jest.fn().mockReturnThis(),
     eq: jest.fn().mockReturnThis(),
     order: jest.fn().mockReturnThis(),
     range: jest.fn().mockReturnThis(),
     single: jest.fn().mockResolvedValue(value),
-    then: (res: Function, rej: Function) => Promise.resolve(value).then(res as any, rej),
+    then: (res: Function, rej: Function) => Promise.resolve(value).then(res as any, rej as any),
   };
   return qb;
 }
@@ -46,11 +47,18 @@ describe('ReviewsService', () => {
     const reviewerId = 'reviewer-1';
     const dto = { post_id: 'post-1', rating: 5, comment: 'Ótimo serviço!' };
 
+    // updatePostRating faz: from('reviews').select('rating').eq() + from('posts').update().eq()
+    function mockUpdateRating() {
+      return [makeQB({ data: [] }), makeQB()];
+    }
+
     it('cria avaliação com sucesso', async () => {
       const mockReview = { id: 'review-1', ...dto, reviewer_id: reviewerId };
       adminClient.from
         .mockReturnValueOnce(makeQB({ data: { user_id: 'outro-user' } }))
-        .mockReturnValueOnce(makeQB({ data: mockReview }));
+        .mockReturnValueOnce(makeQB({ data: mockReview }))
+        .mockReturnValueOnce(mockUpdateRating()[0])
+        .mockReturnValueOnce(mockUpdateRating()[1]);
 
       const result = await service.create(reviewerId, dto, 'mock-token');
 
@@ -71,7 +79,9 @@ describe('ReviewsService', () => {
       const mockReview = { id: 'review-1', ...dto, reviewer_id: reviewerId };
       adminClient.from
         .mockReturnValueOnce(makeQB({ data: null }))
-        .mockReturnValueOnce(makeQB({ data: mockReview }));
+        .mockReturnValueOnce(makeQB({ data: mockReview }))
+        .mockReturnValueOnce(mockUpdateRating()[0])
+        .mockReturnValueOnce(mockUpdateRating()[1]);
 
       const result = await service.create(reviewerId, dto, 'mock-token');
 
@@ -90,7 +100,9 @@ describe('ReviewsService', () => {
       const insertQB = makeQB({ data: { id: 'review-1' } });
       adminClient.from
         .mockReturnValueOnce(makeQB({ data: { user_id: 'outro-user' } }))
-        .mockReturnValueOnce(insertQB);
+        .mockReturnValueOnce(insertQB)
+        .mockReturnValueOnce(mockUpdateRating()[0])
+        .mockReturnValueOnce(mockUpdateRating()[1]);
 
       await service.create(reviewerId, dto, 'mock-token');
 
@@ -139,9 +151,16 @@ describe('ReviewsService', () => {
   });
 
   describe('delete', () => {
+    // delete agora chama updatePostRating: from('reviews').select + from('posts').update
+    function mockReview(override: any = {}) {
+      return makeQB({ data: { reviewer_id: 'user-1', post_id: 'post-1', ...override } });
+    }
+
     it('remove avaliação quando usuário é o revisor', async () => {
       adminClient.from
-        .mockReturnValueOnce(makeQB({ data: { reviewer_id: 'user-1' } }))
+        .mockReturnValueOnce(mockReview())
+        .mockReturnValueOnce(makeQB())
+        .mockReturnValueOnce(makeQB({ data: [] }))
         .mockReturnValueOnce(makeQB());
 
       const result = await service.delete('review-1', 'user-1');
@@ -164,7 +183,9 @@ describe('ReviewsService', () => {
     });
 
     it('lança ForbiddenException quando usuário não é o revisor', async () => {
-      adminClient.from.mockReturnValue(makeQB({ data: { reviewer_id: 'outro-user' } }));
+      adminClient.from.mockReturnValue(
+        makeQB({ data: { reviewer_id: 'outro-user', post_id: 'post-1' } }),
+      );
 
       await expect(service.delete('review-1', 'user-1')).rejects.toThrow(ForbiddenException);
     });
@@ -172,8 +193,10 @@ describe('ReviewsService', () => {
     it('chama delete com o id correto da avaliação', async () => {
       const deleteQB = makeQB();
       adminClient.from
-        .mockReturnValueOnce(makeQB({ data: { reviewer_id: 'user-1' } }))
-        .mockReturnValueOnce(deleteQB);
+        .mockReturnValueOnce(mockReview())
+        .mockReturnValueOnce(deleteQB)
+        .mockReturnValueOnce(makeQB({ data: [] }))
+        .mockReturnValueOnce(makeQB());
 
       await service.delete('review-1', 'user-1');
 
