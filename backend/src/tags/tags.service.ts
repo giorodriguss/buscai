@@ -1,8 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 
 @Injectable()
 export class TagsService {
+  private readonly logger = new Logger(TagsService.name);
+
   constructor(private supabase: SupabaseService) {}
 
   async findAll() {
@@ -12,7 +14,10 @@ export class TagsService {
       .select('id, name, slug')
       .order('name');
 
-    if (error) throw new BadRequestException(error.message);
+    if (error) {
+      this.logger.error(`Find tags failed: ${error.message}`);
+      throw new BadRequestException('Não foi possível buscar as tags');
+    }
     return data;
   }
 }

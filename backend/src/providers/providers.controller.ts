@@ -10,16 +10,13 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ProvidersService } from './providers.service';
 import { CreateProviderDto } from './dto/create-provider.dto';
 import { UpdateProviderDto } from './dto/update-provider.dto';
 import { SearchProvidersDto } from './dto/search-providers.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { BearerToken } from '../common/decorators/bearer-token.decorator';
 
 @ApiTags('Providers')
 @Controller('providers')
@@ -58,15 +55,19 @@ export class ProvidersController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Atualizar perfil do prestador autenticado' })
-  update(@Request() req: any, @Body() dto: UpdateProviderDto) {
-    return this.providersService.update(req.user.id, dto);
+  update(
+    @Request() req: any,
+    @BearerToken() token: string,
+    @Body() dto: UpdateProviderDto,
+  ) {
+    return this.providersService.update(req.user.id, dto, token);
   }
 
   @Delete()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Desativar perfil do prestador' })
-  deactivate(@Request() req: any) {
-    return this.providersService.deactivate(req.user.id);
+  deactivate(@BearerToken() token: string) {
+    return this.providersService.deactivate(token);
   }
 }

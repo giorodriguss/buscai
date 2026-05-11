@@ -1,8 +1,10 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 
 @Injectable()
 export class AdsService {
+  private readonly logger = new Logger(AdsService.name);
+
   constructor(private supabase: SupabaseService) {}
 
   async findActive() {
@@ -13,45 +15,34 @@ export class AdsService {
       .eq('status', 'ativo')
       .order('created_at', { ascending: false });
 
-    if (error) throw new BadRequestException(error.message);
+    if (error) {
+      this.logger.error(`Find active ads failed: ${error.message}`);
+      throw new BadRequestException('Não foi possível buscar os anúncios');
+    }
     return data;
   }
 
   async trackImpression(adId: string) {
-    const { data, error } = await this.supabase
+    const { error } = await this.supabase
       .getAdminClient()
-      .from('ads')
-      .select('impressions')
-      .eq('id', adId)
-      .single();
+      .rpc('increment_ad_impressions', { p_ad_id: adId });
 
-    if (error || !data) throw new NotFoundException('Anúncio não encontrado');
-
-    await this.supabase
-      .getAdminClient()
-      .from('ads')
-      .update({ impressions: (data.impressions ?? 0) + 1 })
-      .eq('id', adId);
-
+    if (error) {
+      this.logger.error(`Track impression for ad ${adId} failed: ${error.message}`);
+      throw new NotFoundException('Anúncio não encontrado');
+    }
     return { ok: true };
   }
 
   async trackClick(adId: string) {
-    const { data, error } = await this.supabase
+    const { error } = await this.supabase
       .getAdminClient()
-      .from('ads')
-      .select('clicks')
-      .eq('id', adId)
-      .single();
+      .rpc('increment_ad_clicks', { p_ad_id: adId });
 
-    if (error || !data) throw new NotFoundException('Anúncio não encontrado');
-
-    await this.supabase
-      .getAdminClient()
-      .from('ads')
-      .update({ clicks: (data.clicks ?? 0) + 1 })
-      .eq('id', adId);
-
+    if (error) {
+      this.logger.error(`Track click for ad ${adId} failed: ${error.message}`);
+      throw new NotFoundException('Anúncio não encontrado');
+    }
     return { ok: true };
   }
 }

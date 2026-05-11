@@ -1,6 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard } from '@nestjs/throttler';
+import { envValidationSchema } from './config/env.validation';
 import { AppController } from './app.controller';
 import { SupabaseModule } from './supabase/supabase.module';
 import { AuthModule } from './auth/auth.module';
@@ -17,8 +21,17 @@ import { ProvidersModule } from './providers/providers.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      validationSchema: envValidationSchema,
+      validationOptions: { abortEarly: false },
+    }),
+
     CacheModule.register({ isGlobal: true, ttl: 5 * 60 * 1000 }),
+
+    // Global rate limit: 120 req / min por IP (proteção geral)
+    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
+
     SupabaseModule,
     AuthModule,
     UsersModule,
@@ -33,6 +46,6 @@ import { ProvidersModule } from './providers/providers.module';
     ProvidersModule,
   ],
   controllers: [AppController],
-  providers: [],
+  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}

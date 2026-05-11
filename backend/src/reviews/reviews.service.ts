@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
@@ -9,9 +10,11 @@ import { CreateReviewDto } from './dto/create-review.dto';
 
 @Injectable()
 export class ReviewsService {
+  private readonly logger = new Logger(ReviewsService.name);
+
   constructor(private supabase: SupabaseService) {}
 
-  async create(reviewerId: string, dto: CreateReviewDto) {
+  async create(reviewerId: string, dto: CreateReviewDto, token: string) {
     const { data: post } = await this.supabase
       .getAdminClient()
       .from('posts')
@@ -23,14 +26,18 @@ export class ReviewsService {
       throw new ForbiddenException('Você não pode avaliar seu próprio post');
     }
 
+    // user client aplica RLS: reviewer_id = auth.uid()
     const { data, error } = await this.supabase
-      .getAdminClient()
+      .getUserClient(token)
       .from('reviews')
       .insert({ reviewer_id: reviewerId, ...dto })
       .select()
       .single();
 
-    if (error) throw new BadRequestException(error.message);
+    if (error) {
+      this.logger.error(`Create review failed for post ${dto.post_id}: ${error.message}`);
+      throw new BadRequestException('Não foi possível criar a avaliação');
+    }
 
     await this.updatePostRating(dto.post_id);
     return data;
@@ -48,26 +55,35 @@ export class ReviewsService {
       .order('created_at', { ascending: false })
       .range(from, to);
 
-    if (error) throw new BadRequestException(error.message);
+    if (error) {
+      this.logger.error(`Find reviews for post ${postId} failed: ${error.message}`);
+      throw new BadRequestException('Não foi possível buscar as avaliações');
+    }
     return { data, total: count, page, limit };
   }
 
-  async delete(reviewId: string, userId: string) {
-    const { data, error } = await this.supabase
+  async delete(reviewId: string, token: string) {
+    // Busca post_id antes de deletar para atualizar o rating depois
+    const { data, error: fetchError } = await this.supabase
       .getAdminClient()
       .from('reviews')
-      .select('reviewer_id, post_id')
+      .select('post_id')
       .eq('id', reviewId)
       .single();
 
-    if (error || !data) throw new NotFoundException('Avaliação não encontrada');
-    if (data.reviewer_id !== userId) throw new ForbiddenException();
+    if (fetchError || !data) throw new NotFoundException('Avaliação não encontrada');
 
-    await this.supabase
-      .getAdminClient()
+    // user client aplica RLS: só deleta se reviewer_id = auth.uid()
+    const { error } = await this.supabase
+      .getUserClient(token)
       .from('reviews')
       .delete()
       .eq('id', reviewId);
+
+    if (error) {
+      this.logger.error(`Delete review ${reviewId} failed: ${error.message}`);
+      throw new BadRequestException('Não foi possível remover a avaliação');
+    }
 
     await this.updatePostRating(data.post_id);
     return { message: 'Avaliação removida' };

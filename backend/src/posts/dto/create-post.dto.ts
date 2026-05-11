@@ -6,6 +6,7 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  MaxLength,
   Min,
 } from 'class-validator';
 
@@ -13,11 +14,13 @@ export class CreatePostDto {
   @ApiProperty({ example: 'Encanador residencial' })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(200)
   title!: string;
 
   @ApiProperty({ example: 'Serviços de encanamento em geral', required: false })
   @IsString()
   @IsOptional()
+  @MaxLength(2000)
   description?: string;
 
   @ApiProperty({ example: 'uuid-da-categoria' })
@@ -44,11 +47,13 @@ export class CreatePostDto {
   @ApiProperty({ example: 'Centro', required: false })
   @IsString()
   @IsOptional()
+  @MaxLength(100)
   neighborhood?: string;
 
   @ApiProperty({ example: 'São Paulo', required: false })
   @IsString()
   @IsOptional()
+  @MaxLength(100)
   city?: string;
 
   @ApiProperty({ example: 'SP', required: false })

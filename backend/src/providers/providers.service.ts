@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
@@ -10,13 +11,16 @@ import { SearchProvidersDto } from './dto/search-providers.dto';
 
 const PROVIDER_SELECT = `
   *,
-  users(id, full_name, avatar_url, neighborhood, city, state),
-  categories(id, name, slug, icon_name, color_hex),
-  portfolio_images(id, url)
+  users(id, full_name, avatar_url, phone, bio),
+  categories(id, name, icon_name, color_hex),
+  post_photos(id, storage_url, sort_order),
+  reviews(id, rating, comment, created_at, users(id, full_name, avatar_url))
 `;
 
 @Injectable()
 export class ProvidersService {
+  private readonly logger = new Logger(ProvidersService.name);
+
   constructor(private supabase: SupabaseService) {}
 
   async create(userId: string, dto: CreateProviderDto) {
@@ -27,7 +31,10 @@ export class ProvidersService {
       .select()
       .single();
 
-    if (error) throw new BadRequestException(error.message);
+    if (error) {
+      this.logger.error(`Create provider failed for user ${userId}: ${error.message}`);
+      throw new BadRequestException('Não foi possível criar o perfil de prestador');
+    }
     return data;
   }
 
@@ -59,7 +66,10 @@ export class ProvidersService {
           p_limit: limit,
         });
 
-      if (rpcError) throw new BadRequestException(rpcError.message);
+      if (rpcError) {
+        this.logger.error(`providers_nearby RPC failed: ${rpcError.message}`);
+        throw new BadRequestException('Não foi possível buscar prestadores próximos');
+      }
 
       const ids: string[] = (nearby ?? []).map((r: any) => r.id);
       if (ids.length === 0) {
@@ -72,7 +82,10 @@ export class ProvidersService {
         .select(PROVIDER_SELECT)
         .in('id', ids);
 
-      if (error) throw new BadRequestException(error.message);
+      if (error) {
+        this.logger.error(`Provider nearby select failed: ${error.message}`);
+        throw new BadRequestException('Não foi possível buscar prestadores');
+      }
 
       const distanceMap = new Map(
         (nearby ?? []).map((r: any) => [r.id, r.distance_km]),
@@ -94,13 +107,22 @@ export class ProvidersService {
       .order('rating_avg', { ascending: false })
       .range(from, to);
 
-    if (neighborhood) req = req.ilike('neighborhood', `%${neighborhood}%`);
-    if (city) req = req.ilike('city', `%${city}%`);
+    if (neighborhood) {
+      const safe = neighborhood.replace(/%/g, '\\%').replace(/_/g, '\\_');
+      req = req.ilike('neighborhood', `%${safe}%`);
+    }
+    if (city) {
+      const safe = city.replace(/%/g, '\\%').replace(/_/g, '\\_');
+      req = req.ilike('city', `%${safe}%`);
+    }
     if (state) req = req.eq('state', state);
     if (category_id) req = req.eq('category_id', category_id);
 
     const { data, error, count } = await req;
-    if (error) throw new BadRequestException(error.message);
+    if (error) {
+      this.logger.error(`Find providers failed: ${error.message}`);
+      throw new BadRequestException('Não foi possível buscar os prestadores');
+    }
 
     return {
       data,
@@ -116,32 +138,24 @@ export class ProvidersService {
   async findMe(userId: string) {
     const { data, error } = await this.supabase
       .getAdminClient()
-      .from('providers')
-      .select(`
-        *,
-        users(id, full_name, avatar_url, neighborhood, city, state, phone, bio),
-        categories(id, name, slug, icon_name, color_hex),
-        portfolio_images(id, url),
-        reviews(id, rating, comment, created_at, users(id, full_name, avatar_url))
-      `)
-      .eq('id', userId)
-      .single();
+      .from('posts')
+      .select(PROVIDER_SELECT)
+      .eq('user_id', userId)
+      .eq('status', 'ativo')
+      .order('created_at', { ascending: false });
 
-    if (error || !data) throw new NotFoundException('Perfil de prestador não encontrado');
-    return data;
+    if (error) {
+      this.logger.error(`Find provider me failed for user ${userId}: ${error.message}`);
+      throw new NotFoundException('Perfil de prestador não encontrado');
+    }
+    return data ?? [];
   }
 
   async findOne(id: string) {
     const { data, error } = await this.supabase
       .getAdminClient()
-      .from('providers')
-      .select(`
-        *,
-        users(id, full_name, avatar_url, neighborhood, city, state, phone, bio),
-        categories(id, name, slug, icon_name, color_hex),
-        portfolio_images(id, url),
-        reviews(id, rating, comment, created_at, users(id, full_name, avatar_url))
-      `)
+      .from('posts')
+      .select(PROVIDER_SELECT)
       .eq('id', id)
       .eq('is_active', true)
       .single();
@@ -150,27 +164,32 @@ export class ProvidersService {
     return data;
   }
 
-  async update(userId: string, dto: UpdateProviderDto) {
+  async update(userId: string, dto: UpdateProviderDto, token: string) {
     const { data, error } = await this.supabase
-      .getAdminClient()
-      .from('providers')
+      .getUserClient(token)
+      .from('posts')
       .update(dto)
       .eq('id', userId)
       .select()
       .single();
 
-    if (error) throw new BadRequestException(error.message);
+    if (error) {
+      this.logger.error(`Update provider failed for user ${userId}: ${error.message}`);
+      throw new BadRequestException('Não foi possível atualizar o perfil');
+    }
     return data;
   }
 
-  async deactivate(userId: string) {
+  async deactivate(token: string) {
     const { error } = await this.supabase
-      .getAdminClient()
-      .from('providers')
-      .update({ is_active: false })
-      .eq('id', userId);
+      .getUserClient(token)
+      .from('posts')
+      .update({ status: 'inativo' });
 
-    if (error) throw new BadRequestException(error.message);
+    if (error) {
+      this.logger.error(`Deactivate provider failed: ${error.message}`);
+      throw new BadRequestException('Não foi possível desativar o perfil');
+    }
     return { message: 'Perfil desativado' };
   }
 }

@@ -6,6 +6,7 @@ import {
   IsString,
   IsUUID,
   Max,
+  MaxLength,
   Min,
 } from 'class-validator';
 
@@ -13,6 +14,7 @@ export class CreateProviderDto {
   @ApiProperty({ example: 'Encanador com 10 anos de experiência' })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(2000)
   description!: string;
 
   @ApiProperty({ example: 'uuid-da-categoria' })
@@ -22,11 +24,13 @@ export class CreateProviderDto {
   @ApiProperty({ example: '11999999999' })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(20)
   whatsapp!: string;
 
   @ApiProperty({ example: 'Centro' })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(100)
   neighborhood!: string;
 
   @ApiProperty({ example: -23.5505, required: false })
@@ -60,5 +64,6 @@ export class CreateProviderDto {
   })
   @IsString()
   @IsOptional()
+  @MaxLength(200)
   schedule?: string;
 }

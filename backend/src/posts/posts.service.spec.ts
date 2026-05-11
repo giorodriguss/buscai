@@ -263,7 +263,7 @@ describe('PostsService', () => {
 
       jest.spyOn(service, 'findOne').mockResolvedValue(mockPost as any);
 
-      const result = await service.update('post-1', 'user-1', updateDto);
+      const result = await service.update('post-1', updateDto, 'mock-token');
 
       expect(result).toEqual(mockPost);
     });
@@ -271,13 +271,13 @@ describe('PostsService', () => {
     it('lança ForbiddenException quando usuário não é dono', async () => {
       adminClient.from.mockReturnValue(makeQB({ data: { user_id: 'outro-user' } }));
 
-      await expect(service.update('post-1', 'user-1', updateDto)).rejects.toThrow(ForbiddenException);
+      await expect(service.update('post-1', updateDto, 'mock-token')).rejects.toThrow(ForbiddenException);
     });
 
     it('lança NotFoundException quando post não existe', async () => {
       adminClient.from.mockReturnValue(makeQB({ data: null }));
 
-      await expect(service.update('post-1', 'user-1', updateDto)).rejects.toThrow(NotFoundException);
+      await expect(service.update('post-1', updateDto, 'mock-token')).rejects.toThrow(NotFoundException);
     });
 
     it('lança BadRequestException quando update no banco falha', async () => {
@@ -285,7 +285,7 @@ describe('PostsService', () => {
         .mockReturnValueOnce(makeQB({ data: { user_id: 'user-1' } }))
         .mockReturnValueOnce(makeQB({ error: { message: 'Erro de constraint' } }));
 
-      await expect(service.update('post-1', 'user-1', updateDto)).rejects.toThrow(BadRequestException);
+      await expect(service.update('post-1', updateDto, 'mock-token')).rejects.toThrow(BadRequestException);
     });
 
     it('substitui tags existentes quando tag_ids fornecido', async () => {
@@ -299,7 +299,7 @@ describe('PostsService', () => {
 
       jest.spyOn(service, 'findOne').mockResolvedValue(mockPost as any);
 
-      await service.update('post-1', 'user-1', { tag_ids: ['tag-uuid-1'] });
+      await service.update('post-1', { tag_ids: ['tag-uuid-1'] }, 'mock-token');
 
       expect(deleteTagsQB.delete).toHaveBeenCalled();
       expect(deleteTagsQB.eq).toHaveBeenCalledWith('post_id', 'post-1');
@@ -317,7 +317,7 @@ describe('PostsService', () => {
 
       jest.spyOn(service, 'findOne').mockResolvedValue(mockPost as any);
 
-      await service.update('post-1', 'user-1', { tag_ids: [] });
+      await service.update('post-1', { tag_ids: [] }, 'mock-token');
 
       expect(deleteTagsQB.delete).toHaveBeenCalled();
       expect(adminClient.from).toHaveBeenCalledTimes(3);
@@ -330,7 +330,7 @@ describe('PostsService', () => {
 
       jest.spyOn(service, 'findOne').mockResolvedValue(mockPost as any);
 
-      await service.update('post-1', 'user-1', { title: 'Novo título' });
+      await service.update('post-1', { title: 'Novo título' }, 'mock-token');
 
       expect(adminClient.from).not.toHaveBeenCalledWith('post_tags');
     });

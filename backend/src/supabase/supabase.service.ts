@@ -7,14 +7,16 @@ export class SupabaseService {
   private client: SupabaseClient;
   private adminClient: SupabaseClient;
 
+  private readonly supabaseUrl: string;
+  private readonly supabaseAnonKey: string;
+
   constructor(private config: ConfigService) {
-    this.client = createClient(
-      this.config.getOrThrow('SUPABASE_URL'),
-      this.config.getOrThrow('SUPABASE_ANON_KEY'),
-    );
+    this.supabaseUrl     = this.config.getOrThrow('SUPABASE_URL');
+    this.supabaseAnonKey = this.config.getOrThrow('SUPABASE_ANON_KEY');
+    this.client = createClient(this.supabaseUrl, this.supabaseAnonKey);
 
     this.adminClient = createClient(
-      this.config.getOrThrow('SUPABASE_URL'),
+      this.supabaseUrl,
       this.config.getOrThrow('SUPABASE_SERVICE_ROLE_KEY'),
     );
   }
@@ -25,5 +27,13 @@ export class SupabaseService {
 
   getAdminClient(): SupabaseClient {
     return this.adminClient;
+  }
+
+  // Cria um client que respeita as RLS policies do usuário autenticado.
+  // Use para operações de escrita onde o Supabase deve aplicar as policies.
+  getUserClient(accessToken: string): SupabaseClient {
+    return createClient(this.supabaseUrl, this.supabaseAnonKey, {
+      global: { headers: { Authorization: `Bearer ${accessToken}` } },
+    });
   }
 }

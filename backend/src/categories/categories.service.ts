@@ -1,8 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
 
 @Injectable()
 export class CategoriesService {
+  private readonly logger = new Logger(CategoriesService.name);
+
   constructor(private supabase: SupabaseService) {}
 
   async findAll() {
@@ -13,7 +15,10 @@ export class CategoriesService {
       .eq('is_active', true)
       .order('name');
 
-    if (error) throw new BadRequestException(error.message);
+    if (error) {
+      this.logger.error(`Find categories failed: ${error.message}`);
+      throw new BadRequestException('Não foi possível buscar as categorias');
+    }
     return data;
   }
 }
