@@ -19,7 +19,7 @@ function makeQB(resolved: { data?: any; error?: any; count?: any } = {}) {
     order: jest.fn().mockReturnThis(),
     range: jest.fn().mockReturnThis(),
     single: jest.fn().mockResolvedValue(value),
-    then: (res: Function, rej: Function) => Promise.resolve(value).then(res as any, rej),
+    then: (res: Function, rej: Function) => Promise.resolve(value).then(res as any, rej as any),
   };
   return qb;
 }
@@ -42,7 +42,7 @@ describe('PostsService', () => {
 
   const createDto = {
     title: 'Encanador',
-    category_id: 1,
+    category_id: 'cat-uuid-1',
     whatsapp: '11999999999',
   };
 
@@ -172,9 +172,9 @@ describe('PostsService', () => {
       const qb = makeQB({ data: [], count: 0 });
       adminClient.from.mockReturnValue(qb);
 
-      await service.findAll({ category_id: 3 });
+      await service.findAll({ category_id: 'cat-uuid-1' });
 
-      expect(qb.eq).toHaveBeenCalledWith('category_id', 3);
+      expect(qb.eq).toHaveBeenCalledWith('category_id', 'cat-uuid-1');
     });
 
     it('aplica filtro de bairro', async () => {

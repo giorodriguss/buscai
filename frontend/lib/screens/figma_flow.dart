@@ -1,7 +1,11 @@
 import 'dart:async';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../services/auth_service.dart';
+import '../services/providers_service.dart';
+import '../services/favorites_service.dart';
 
 part 'flow_parts/splash_screen_flow.dart';
 part 'flow_parts/onboarding_screen_flow.dart';
@@ -69,22 +73,56 @@ class Review {
     required this.comment,
     required this.date,
   });
+
+  factory Review.fromApi(Map<String, dynamic> json) {
+    final user = json['users'] as Map<String, dynamic>? ?? {};
+    return Review(
+      name: user['full_name'] as String? ?? 'Usuário',
+      rating: (json['rating'] as num?)?.toInt() ?? 5,
+      comment: json['comment'] as String? ?? '',
+      date: _relativeDate(json['created_at'] as String?),
+    );
+  }
+
+  static String _relativeDate(String? iso) {
+    if (iso == null) return '';
+    try {
+      final diff = DateTime.now().difference(DateTime.parse(iso));
+      if (diff.inDays == 0) return 'Hoje';
+      if (diff.inDays == 1) return 'Ontem';
+      if (diff.inDays < 7) return '${diff.inDays} dias atrás';
+      if (diff.inDays < 14) return '1 semana atrás';
+      return '${(diff.inDays / 7).floor()} semanas atrás';
+    } catch (_) {
+      return '';
+    }
+  }
 }
 
 // Usuario logado no front. O campo isProvider controla se aparece a aba
 // Colaborador no menu inferior.
 class AppUser {
+  final String id;
   String name;
   String email;
   String phone;
   bool isProvider;
 
   AppUser({
+    this.id = '',
     required this.name,
     required this.email,
     this.phone = '',
     this.isProvider = false,
   });
+
+  factory AppUser.fromApi(Map<String, dynamic> json) => AppUser(
+        id: json['id'] as String? ?? '',
+        name: json['full_name'] as String? ?? '',
+        email: json['email'] as String? ?? '',
+        phone: json['phone'] as String? ?? '',
+        isProvider: json['role'] == 'prestador',
+      );
 }
 
 // Item do historico local criado quando a pessoa agenda um servico.
@@ -237,6 +275,48 @@ class Provider {
     required this.yearsExperience,
     required this.services,
   });
+
+  factory Provider.fromApi(Map<String, dynamic> json) {
+    final user = json['users'] as Map<String, dynamic>? ?? {};
+    final cat = json['categories'] as Map<String, dynamic>? ?? {};
+    final imgs = json['post_photos'] as List? ?? [];
+    final revs = json['reviews'] as List? ?? [];
+
+    final portfolio = imgs
+        .map((img) => (img as Map<String, dynamic>)['storage_url'] as String? ?? '')
+        .where((u) => u.isNotEmpty)
+        .toList();
+
+    final reviews = revs
+        .map((r) => Review.fromApi(r as Map<String, dynamic>))
+        .toList();
+
+    final priceFrom = (json['price_from'] as num?)?.toInt() ?? 0;
+    final priceTo = (json['price_to'] as num?)?.toInt() ?? 0;
+    final distKm = json['distance_km'] as num?;
+
+    return Provider(
+      id: json['id'] as String? ?? '',
+      name: user['full_name'] as String? ?? '',
+      category: cat['name'] as String? ?? '',
+      rating: (json['rating_avg'] as num?)?.toDouble() ?? 0.0,
+      reviewCount: (json['review_count'] as num?)?.toInt() ?? 0,
+      distance: distKm != null ? '${distKm.toStringAsFixed(1)} km' : '',
+      image: user['avatar_url'] as String? ?? '',
+      coverImage: portfolio.isNotEmpty ? portfolio.first : '',
+      about: json['bio'] as String? ?? '',
+      phone: json['phone'] as String? ?? user['phone'] as String? ?? '',
+      portfolio: portfolio,
+      reviews: reviews,
+      availableHours: const [],
+      pricePerHour: priceFrom,
+      priceRange: priceFrom > 0
+          ? (priceTo > 0 ? 'R\$ $priceFrom–$priceTo' : 'R\$ $priceFrom+')
+          : '',
+      yearsExperience: (json['years_experience'] as num?)?.toInt() ?? 0,
+      services: const [],
+    );
+  }
 }
 
 // Catalogo mockado usado por Home, Busca e Detalhe. A estrutura ja esta perto

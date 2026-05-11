@@ -112,9 +112,9 @@ class _CollaboratorScreenState extends State<CollaboratorScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Expanded(
+                  const Expanded(
                     child: Column(
-                      children: const [
+                      children: [
                         CircleAvatar(radius: 24, backgroundColor: BColors.orange, child: Icon(Icons.star_rounded, color: Colors.white)),
                         SizedBox(height: 8),
                         Text('0.0', textAlign: TextAlign.center, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
@@ -336,6 +336,8 @@ class _ServiceEditor extends StatelessWidget {
   Widget build(BuildContext context) {
     return _InlineEditor(
       title: title,
+      onSave: onSave,
+      onCancel: onCancel,
       children: [
         TextInputLike(icon: Icons.handyman_outlined, hint: 'Nome do serviço', controller: nameController),
         const SizedBox(height: 12),
@@ -347,8 +349,6 @@ class _ServiceEditor extends StatelessWidget {
           ],
         ),
       ],
-      onSave: onSave,
-      onCancel: onCancel,
     );
   }
 }

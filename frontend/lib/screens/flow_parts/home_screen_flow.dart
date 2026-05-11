@@ -14,9 +14,31 @@ class _HomeScreenState extends State<HomeScreen> {
   String selectedCategory = 'Todos';
   String? selectedFilter;
   String query = '';
+  List<Provider> _apiProviders = [];
+  bool _loadingProviders = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProviders();
+  }
+
+  Future<void> _loadProviders() async {
+    setState(() => _loadingProviders = true);
+    try {
+      final data = await ProvidersApiService.instance.findAll();
+      if (mounted) {
+        setState(() => _apiProviders = data.map(Provider.fromApi).toList());
+      }
+    } catch (_) {
+      // fallback to mock on error — no-op, filteredProviders already falls back
+    } finally {
+      if (mounted) setState(() => _loadingProviders = false);
+    }
+  }
 
   List<Provider> get filteredProviders {
-    var providers = [...mockProviders];
+    var providers = _apiProviders.isNotEmpty ? [..._apiProviders] : [...mockProviders];
     if (query.trim().isNotEmpty) {
       final q = query.toLowerCase();
       providers = providers
@@ -169,8 +191,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 onTap: (value) => setState(() => selectedCategory = value),
               ),
               const SizedBox(height: 22),
-              Row(
-                children: const [
+              const Row(
+                children: [
                   Icon(Icons.tune_rounded, color: BColors.gray, size: 18),
                   SizedBox(width: 8),
                   SectionTitle('Filtros', size: 16),
@@ -187,12 +209,18 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 24),
               const SectionTitle('Perto de você', size: 18),
               const SizedBox(height: 14),
-              ...filteredProviders.take(4).map(
-                (p) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: ProviderCard(provider: p),
+              if (_loadingProviders)
+                const Center(child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 32),
+                  child: CircularProgressIndicator(color: BColors.green),
+                ))
+              else
+                ...filteredProviders.take(4).map(
+                  (p) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: ProviderCard(provider: p),
+                  ),
                 ),
-              ),
               const SizedBox(height: 16),
               const SectionTitle('Mais avaliados do bairro', size: 18),
               const SizedBox(height: 14),

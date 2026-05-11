@@ -12,6 +12,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   bool loginFailed = false;
+  bool _loading = false;
 
   @override
   void dispose() {
@@ -20,10 +21,42 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _showLoginError() {
-    // Front temporario: sem backend, login nao autentica. Quando a API existir,
-    // trocar por chamada ao endpoint e preencher esses erros conforme a resposta.
-    setState(() => loginFailed = true);
+  void _login() => _doLogin();
+
+  Future<void> _doLogin() async {
+    final email = emailController.text.trim();
+    final password = passwordController.text;
+    if (email.isEmpty || password.isEmpty) {
+      setState(() => loginFailed = true);
+      return;
+    }
+    setState(() {
+      _loading = true;
+      loginFailed = false;
+    });
+    try {
+      final result = await AuthApiService.instance.login(
+        email: email,
+        password: password,
+      );
+      final user = AppUser.fromApi(result['user'] as Map<String, dynamic>);
+      AppSession.currentUser = user;
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => MainShell(user: user)),
+      );
+    } on DioException catch (e) {
+      setState(() => loginFailed = true);
+      final msg = (e.response?.data as Map?)?['message']?.toString()
+          ?? 'Credenciais inválidas';
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg)),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   @override
@@ -61,7 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
           TextInputType.emailAddress,
           false,
           controller: emailController,
-          errorText: loginFailed ? 'E-mail nao encontrado' : null,
+          errorText: loginFailed ? 'E-mail ou senha incorretos' : null,
         ),
         FieldSpec(
           Icons.lock_outline_rounded,
@@ -69,7 +102,7 @@ class _LoginScreenState extends State<LoginScreen> {
           TextInputType.visiblePassword,
           true,
           controller: passwordController,
-          errorText: loginFailed ? 'Senha incorreta ou usuario inexistente' : null,
+          errorText: loginFailed ? 'Verifique suas credenciais' : null,
         ),
       ],
       forgot: TextButton(
@@ -79,8 +112,8 @@ class _LoginScreenState extends State<LoginScreen> {
           style: TextStyle(color: BColors.orange, fontFamily: 'Georgia'),
         ),
       ),
-      primaryLabel: 'Entrar',
-      onPrimary: _showLoginError,
+      primaryLabel: _loading ? 'Entrando...' : 'Entrar',
+      onPrimary: _loading ? () {} : _login,
       secondaryLabel: 'Entrar como Prestador',
       onSecondary: () => Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => const LoginProviderScreen()),

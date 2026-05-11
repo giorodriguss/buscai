@@ -174,7 +174,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           decoration: BoxDecoration(
                             color: index == _slide
                                 ? Colors.white
-                                : Colors.white.withOpacity(.4),
+                                : Colors.white.withValues(alpha: .4),
                             borderRadius: BorderRadius.circular(8),
                           ),
                         );

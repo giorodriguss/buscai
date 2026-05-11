@@ -18,7 +18,7 @@ function makeQB(resolved: { data?: any; error?: any; count?: any } = {}) {
     order: jest.fn().mockReturnThis(),
     range: jest.fn().mockReturnThis(),
     single: jest.fn().mockResolvedValue(value),
-    then: (res: Function, rej: Function) => Promise.resolve(value).then(res as any, rej),
+    then: (res: Function, rej: Function) => Promise.resolve(value).then(res as any, rej as any),
   };
   return qb;
 }

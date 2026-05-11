@@ -259,9 +259,9 @@ class _AddressFormState extends State<_AddressForm> {
         const SizedBox(height: 18),
         Row(
           children: [
-            Expanded(flex: 2, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [_FieldLabel('Rua'), TextInputLike(icon: Icons.route_outlined, hint: 'Nome da rua', controller: streetController)])),
+            Expanded(flex: 2, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const _FieldLabel('Rua'), TextInputLike(icon: Icons.route_outlined, hint: 'Nome da rua', controller: streetController)])),
             const SizedBox(width: 12),
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [_FieldLabel('Número'), TextInputLike(icon: Icons.numbers_rounded, hint: '123', controller: numberController)])),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const _FieldLabel('Número'), TextInputLike(icon: Icons.numbers_rounded, hint: '123', controller: numberController)])),
           ],
         ),
         const SizedBox(height: 18),
@@ -273,9 +273,9 @@ class _AddressFormState extends State<_AddressForm> {
         const SizedBox(height: 18),
         Row(
           children: [
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [_FieldLabel('Cidade'), TextInputLike(icon: Icons.location_city_rounded, hint: 'Cidade', controller: cityController)])),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const _FieldLabel('Cidade'), TextInputLike(icon: Icons.location_city_rounded, hint: 'Cidade', controller: cityController)])),
             const SizedBox(width: 12),
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [_FieldLabel('Estado'), TextInputLike(icon: Icons.map_outlined, hint: 'SP', controller: stateController)])),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const _FieldLabel('Estado'), TextInputLike(icon: Icons.map_outlined, hint: 'SP', controller: stateController)])),
           ],
         ),
         const SizedBox(height: 28),

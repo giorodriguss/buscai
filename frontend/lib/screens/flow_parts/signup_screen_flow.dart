@@ -68,8 +68,11 @@ class _SignupScreenState extends State<SignupScreen> {
     super.dispose();
   }
 
-  void _createAccount() {
-    // Futuro backend: trocar por chamada de cadastro/login e guardar token/sessão real.
+  bool _loading = false;
+
+  void _createAccount() => _doCreateAccount();
+
+  Future<void> _doCreateAccount() async {
     final name = nameController.text.trim();
     final email = emailController.text.trim();
     final phone = phoneController.text.trim();
@@ -109,11 +112,33 @@ class _SignupScreenState extends State<SignupScreen> {
       );
       return;
     }
-    final user = AppUser(name: name, email: email, phone: phone);
-    AppSession.currentUser = user;
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => MainShell(user: user)),
-    );
+    setState(() => _loading = true);
+    try {
+      await AuthApiService.instance.register(
+        fullName: name,
+        email: email,
+        password: password,
+        role: 'cliente',
+        phone: phone,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Conta criada! Verifique seu e-mail para ativar.')),
+      );
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+    } on DioException catch (e) {
+      final msg = (e.response?.data as Map?)?['message']?.toString()
+          ?? 'Erro ao criar conta. Tente novamente.';
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg)),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   @override
@@ -129,8 +154,8 @@ class _SignupScreenState extends State<SignupScreen> {
         FieldSpec(Icons.lock_outline_rounded, 'Senha', TextInputType.visiblePassword, true, controller: passwordController, errorText: validation.contains('password') ? passwordError : null, inputFormatters: [LengthLimitingTextInputFormatter(12)], onChanged: (_) => _queueValidation('password'), onEditingComplete: () => _showValidation('password')),
         FieldSpec(Icons.lock_outline_rounded, 'Confirmar senha', TextInputType.visiblePassword, true, controller: confirmPasswordController, errorText: validation.contains('confirm') ? confirmPasswordError : null, inputFormatters: [LengthLimitingTextInputFormatter(12)], onChanged: (_) => _queueValidation('confirm'), onEditingComplete: () => _showValidation('confirm')),
       ],
-      primaryLabel: 'Criar conta',
-      onPrimary: _createAccount,
+      primaryLabel: _loading ? 'Criando conta...' : 'Criar conta',
+      onPrimary: _loading ? () {} : _createAccount,
       footer: const Text(
         'Ao criar uma conta, você concorda com nossos Termos de Uso e Política de Privacidade',
         textAlign: TextAlign.center,

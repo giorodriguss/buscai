@@ -10,9 +10,10 @@ import { SearchProvidersDto } from './dto/search-providers.dto';
 
 const PROVIDER_SELECT = `
   *,
-  users(id, full_name, avatar_url, neighborhood, city, state),
-  categories(id, name, slug, icon_name, color_hex),
-  portfolio_images(id, url)
+  users(id, full_name, avatar_url),
+  categories(id, name, icon_name, color_hex),
+  post_photos(id, storage_url, sort_order),
+  reviews(id, rating, comment, created_at, users(id, full_name, avatar_url))
 `;
 
 @Injectable()
@@ -22,8 +23,8 @@ export class ProvidersService {
   async create(userId: string, dto: CreateProviderDto) {
     const { data, error } = await this.supabase
       .getAdminClient()
-      .from('providers')
-      .insert({ id: userId, ...dto })
+      .from('posts')
+      .insert({ user_id: userId, status: 'ativo', ...dto })
       .select()
       .single();
 
@@ -68,7 +69,7 @@ export class ProvidersService {
 
       const { data, error } = await this.supabase
         .getAdminClient()
-        .from('providers')
+        .from('posts')
         .select(PROVIDER_SELECT)
         .in('id', ids);
 
@@ -88,10 +89,10 @@ export class ProvidersService {
     // Normal paginated query
     let req = this.supabase
       .getAdminClient()
-      .from('providers')
+      .from('posts')
       .select(PROVIDER_SELECT, { count: 'exact' })
-      .eq('is_active', true)
-      .order('rating_avg', { ascending: false })
+      .eq('status', 'ativo')
+      .order('created_at', { ascending: false })
       .range(from, to);
 
     if (neighborhood) req = req.ilike('neighborhood', `%${neighborhood}%`);
@@ -116,34 +117,35 @@ export class ProvidersService {
   async findMe(userId: string) {
     const { data, error } = await this.supabase
       .getAdminClient()
-      .from('providers')
+      .from('posts')
       .select(`
         *,
-        users(id, full_name, avatar_url, neighborhood, city, state, phone, bio),
-        categories(id, name, slug, icon_name, color_hex),
-        portfolio_images(id, url),
+        users(id, full_name, avatar_url, phone, bio),
+        categories(id, name, icon_name, color_hex),
+        post_photos(id, storage_url, sort_order),
         reviews(id, rating, comment, created_at, users(id, full_name, avatar_url))
       `)
-      .eq('id', userId)
-      .single();
+      .eq('user_id', userId)
+      .eq('status', 'ativo')
+      .order('created_at', { ascending: false });
 
-    if (error || !data) throw new NotFoundException('Perfil de prestador não encontrado');
-    return data;
+    if (error) throw new NotFoundException('Perfil de prestador não encontrado');
+    return data ?? [];
   }
 
   async findOne(id: string) {
     const { data, error } = await this.supabase
       .getAdminClient()
-      .from('providers')
+      .from('posts')
       .select(`
         *,
-        users(id, full_name, avatar_url, neighborhood, city, state, phone, bio),
-        categories(id, name, slug, icon_name, color_hex),
-        portfolio_images(id, url),
+        users(id, full_name, avatar_url, phone, bio),
+        categories(id, name, icon_name, color_hex),
+        post_photos(id, storage_url, sort_order),
         reviews(id, rating, comment, created_at, users(id, full_name, avatar_url))
       `)
       .eq('id', id)
-      .eq('is_active', true)
+      .eq('status', 'ativo')
       .single();
 
     if (error || !data) throw new NotFoundException('Prestador não encontrado');
@@ -153,9 +155,10 @@ export class ProvidersService {
   async update(userId: string, dto: UpdateProviderDto) {
     const { data, error } = await this.supabase
       .getAdminClient()
-      .from('providers')
+      .from('posts')
       .update(dto)
-      .eq('id', userId)
+      .eq('user_id', userId)
+      .eq('status', 'ativo')
       .select()
       .single();
 
@@ -166,9 +169,9 @@ export class ProvidersService {
   async deactivate(userId: string) {
     const { error } = await this.supabase
       .getAdminClient()
-      .from('providers')
-      .update({ is_active: false })
-      .eq('id', userId);
+      .from('posts')
+      .update({ status: 'inativo' })
+      .eq('user_id', userId);
 
     if (error) throw new BadRequestException(error.message);
     return { message: 'Perfil desativado' };

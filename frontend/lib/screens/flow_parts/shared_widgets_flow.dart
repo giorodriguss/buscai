@@ -358,7 +358,7 @@ class _ServiceCarouselState extends State<ServiceCarousel> {
                     height: 6,
                     margin: const EdgeInsets.symmetric(horizontal: 3),
                     decoration: BoxDecoration(
-                      color: i == index ? Colors.white : Colors.white.withOpacity(.5),
+                      color: i == index ? Colors.white : Colors.white.withValues(alpha: .5),
                       borderRadius: BorderRadius.circular(6),
                     ),
                   ),
@@ -1418,7 +1418,7 @@ class _FloatingDots extends StatelessWidget {
             height: 90,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.white.withOpacity(.04),
+              color: Colors.white.withValues(alpha: .04),
             ),
           ),
         ),

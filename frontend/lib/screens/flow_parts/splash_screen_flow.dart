@@ -18,12 +18,32 @@ class _SplashScreenState extends State<SplashScreen>
       vsync: this,
       duration: const Duration(milliseconds: 900),
     )..forward();
-    Timer(const Duration(milliseconds: 2500), () {
-      if (!mounted) return;
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const OnboardingScreen()),
-      );
-    });
+    Timer(const Duration(milliseconds: 2500), _checkSession);
+  }
+
+  Future<void> _checkSession() async {
+    if (!mounted) return;
+    final token = await AuthApiService.instance.savedToken();
+    if (token == null) {
+      _navigate(const OnboardingScreen());
+      return;
+    }
+    try {
+      final data = await AuthApiService.instance.me();
+      final user = AppUser.fromApi(data);
+      AppSession.currentUser = user;
+      _navigate(MainShell(user: user));
+    } catch (_) {
+      await AuthApiService.instance.logout();
+      _navigate(const OnboardingScreen());
+    }
+  }
+
+  void _navigate(Widget screen) {
+    if (!mounted) return;
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => screen),
+    );
   }
 
   @override
@@ -47,9 +67,9 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
                 child: FadeTransition(
                   opacity: _controller,
-                  child: Column(
+                  child: const Column(
                     mainAxisSize: MainAxisSize.min,
-                    children: const [
+                    children: [
                       _LogoText(color: Colors.white, size: 56, dot: true),
                       SizedBox(height: 16),
                       Text(
