@@ -70,7 +70,11 @@ describe('UploadService', () => {
     it('retorna URL pública do avatar após upload', async () => {
       adminClient.from.mockReturnValue(makeQB());
 
+<<<<<<< HEAD
+      const result = await service.uploadAvatar('user-1', mockFile, 'mock-token');
+=======
       const result = await service.uploadAvatar('user-1', mockFile);
+>>>>>>> origin/develop
 
       expect(result).toEqual({ url: 'https://cdn.example.com/file.jpg' });
     });
@@ -78,7 +82,11 @@ describe('UploadService', () => {
     it('faz upload para o bucket buscai no caminho avatars/{userId}.ext', async () => {
       adminClient.from.mockReturnValue(makeQB());
 
+<<<<<<< HEAD
+      await service.uploadAvatar('user-1', mockFile, 'mock-token');
+=======
       await service.uploadAvatar('user-1', mockFile);
+>>>>>>> origin/develop
 
       expect(adminClient.storage.from).toHaveBeenCalledWith('buscai');
       expect(storageBucket.upload).toHaveBeenCalledWith(
@@ -92,7 +100,11 @@ describe('UploadService', () => {
       const qb = makeQB();
       adminClient.from.mockReturnValue(qb);
 
+<<<<<<< HEAD
+      await service.uploadAvatar('user-1', mockFile, 'mock-token');
+=======
       await service.uploadAvatar('user-1', mockFile);
+>>>>>>> origin/develop
 
       expect(adminClient.from).toHaveBeenCalledWith('users');
       expect(qb.update).toHaveBeenCalledWith({ avatar_url: 'https://cdn.example.com/file.jpg' });
@@ -102,7 +114,11 @@ describe('UploadService', () => {
     it('lança BadRequestException quando upload no storage falha', async () => {
       storageBucket.upload.mockResolvedValue({ error: { message: 'Bucket cheio' } });
 
+<<<<<<< HEAD
+      await expect(service.uploadAvatar('user-1', mockFile, 'mock-token')).rejects.toThrow(BadRequestException);
+=======
       await expect(service.uploadAvatar('user-1', mockFile)).rejects.toThrow(BadRequestException);
+>>>>>>> origin/develop
     });
   });
 

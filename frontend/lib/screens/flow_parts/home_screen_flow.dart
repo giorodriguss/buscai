@@ -1,16 +1,27 @@
 part of '../figma_flow.dart';
 
+<<<<<<< HEAD
+class HomeScreen extends ConsumerStatefulWidget {
+=======
 class HomeScreen extends StatefulWidget {
+>>>>>>> origin/develop
   final AppUser user;
   final VoidCallback onSearch;
 
   const HomeScreen({super.key, required this.user, required this.onSearch});
 
   @override
+<<<<<<< HEAD
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> with AsyncLoadMixin {
+=======
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+>>>>>>> origin/develop
   String selectedCategory = 'Todos';
   String? selectedFilter;
   String query = '';
@@ -23,6 +34,21 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadProviders();
   }
 
+<<<<<<< HEAD
+  Future<void> _loadProviders() => runAsync(
+        call: ProvidersRepository.getAll,
+        onSuccess: (data) => _apiProviders = data,
+        setLoadingTrue: () => _loadingProviders = true,
+        setLoadingFalse: () => _loadingProviders = false,
+      );
+
+  List<Provider> get filteredProviders => ProviderFilter.apply(
+        base: _apiProviders.isNotEmpty ? _apiProviders : mockProviders,
+        query: query,
+        selectedCategory: selectedCategory,
+        selectedFilter: selectedFilter,
+      );
+=======
   Future<void> _loadProviders() async {
     setState(() => _loadingProviders = true);
     try {
@@ -60,6 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     return providers;
   }
+>>>>>>> origin/develop
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +103,12 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
     const filters = ['Disponível agora', 'Mais avaliados', 'Mais próximos'];
     final topRatedProviders = [...mockProviders]..sort((a, b) => b.rating.compareTo(a.rating));
+<<<<<<< HEAD
+    final session = ref.watch(sessionProvider);
+    final address = session.savedAddresses[session.selectedAddress];
+=======
     final address = AppSession.savedAddresses[AppSession.selectedAddress];
+>>>>>>> origin/develop
     final firstName = widget.user.name.trim().split(RegExp(r'\s+')).first;
 
     return ListView(
@@ -102,12 +134,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Expanded(
                     child: GestureDetector(
+<<<<<<< HEAD
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const AddressSelectionScreen()),
+                      ),
+=======
                       onTap: () async {
                         await Navigator.of(context).push(
                           MaterialPageRoute(builder: (_) => const AddressSelectionScreen()),
                         );
                         if (mounted) setState(() {});
                       },
+>>>>>>> origin/develop
                       child: Row(
                         children: [
                           const Icon(Icons.location_on_outlined, color: BColors.orange, size: 18),
@@ -210,10 +248,14 @@ class _HomeScreenState extends State<HomeScreen> {
               const SectionTitle('Perto de você', size: 18),
               const SizedBox(height: 14),
               if (_loadingProviders)
+<<<<<<< HEAD
+                const AppLoadingIndicator()
+=======
                 const Center(child: Padding(
                   padding: EdgeInsets.symmetric(vertical: 32),
                   child: CircularProgressIndicator(color: BColors.green),
                 ))
+>>>>>>> origin/develop
               else
                 ...filteredProviders.take(4).map(
                   (p) => Padding(
@@ -243,6 +285,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
+<<<<<<< HEAD
+=======
 
 // Busca e filtros locais. Futuro backend: enviar query/categoria/bairro para API
 // e renderizar a resposta paginada.
+>>>>>>> origin/develop

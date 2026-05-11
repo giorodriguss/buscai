@@ -40,5 +40,9 @@ class _MainShellState extends State<MainShell> {
   }
 }
 
+<<<<<<< HEAD
+// Feed inicial do usuario comum. Endereco vem do sessionProvider e lista
+=======
 // Feed inicial do usuario comum. Usa nome/endereco da AppSession e lista
+>>>>>>> origin/develop
 // prestadores mockados ate existir endpoint de feed.

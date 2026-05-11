@@ -5,12 +5,11 @@ import { SupabaseService } from '../supabase/supabase.service';
 export class SubscriptionsService {
   constructor(private supabase: SupabaseService) {}
 
-  async findByUser(userId: string) {
+  async findByUser(token: string) {
     const { data, error } = await this.supabase
-      .getAdminClient()
+      .getUserClient(token)
       .from('subscriptions')
       .select('id, plan, status, max_posts, max_photos, created_at, updated_at')
-      .eq('user_id', userId)
       .single();
 
     if (error || !data) throw new NotFoundException('Assinatura não encontrada');

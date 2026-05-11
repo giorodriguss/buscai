@@ -8,6 +8,8 @@ class ProviderServiceDraft {
   ProviderServiceDraft({required this.name, required this.price, required this.duration});
 }
 
+<<<<<<< HEAD
+=======
 // Estado local da area Colaborador. Tudo aqui e editavel no front e deve ser
 // substituido por endpoints de perfil, servicos, disponibilidade e portfolio.
 class CollaboratorState {
@@ -47,3 +49,4 @@ class CollaboratorState {
     portfolio.clear();
   }
 }
+>>>>>>> origin/develop

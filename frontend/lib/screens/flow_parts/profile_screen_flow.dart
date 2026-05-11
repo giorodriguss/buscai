@@ -1,16 +1,29 @@
 part of '../figma_flow.dart';
 
+<<<<<<< HEAD
+class ProfileScreen extends ConsumerWidget {
+=======
 class ProfileScreen extends StatelessWidget {
+>>>>>>> origin/develop
   final AppUser user;
 
   const ProfileScreen({super.key, required this.user});
 
   @override
+<<<<<<< HEAD
+  Widget build(BuildContext context, WidgetRef ref) {
+    final session = ref.watch(sessionProvider);
+    final favoriteProviders = mockProviders
+        .where((provider) => session.favoriteProviderIds.contains(provider.id))
+        .toList();
+    final history = session.history;
+=======
   Widget build(BuildContext context) {
     final favoriteProviders = mockProviders
         .where((provider) => AppSession.favoriteProviderIds.contains(provider.id))
         .toList();
     final history = AppSession.history;
+>>>>>>> origin/develop
     return ListView(
       padding: const EdgeInsets.only(bottom: 112),
       children: [
@@ -137,7 +150,11 @@ class ProfileScreen extends StatelessWidget {
               Center(
                 child: TextButton.icon(
                   onPressed: () {
+<<<<<<< HEAD
+                    ref.read(sessionProvider.notifier).reset();
+=======
                     AppSession.reset();
+>>>>>>> origin/develop
                     Navigator.of(context).pushAndRemoveUntil(
                       MaterialPageRoute(builder: (_) => const LoginScreen()),
                       (_) => false,

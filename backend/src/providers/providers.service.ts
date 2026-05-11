@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { SupabaseService } from '../supabase/supabase.service';
@@ -10,7 +11,11 @@ import { SearchProvidersDto } from './dto/search-providers.dto';
 
 const PROVIDER_SELECT = `
   *,
+<<<<<<< HEAD
+  users(id, full_name, avatar_url, phone, bio),
+=======
   users(id, full_name, avatar_url),
+>>>>>>> origin/develop
   categories(id, name, icon_name, color_hex),
   post_photos(id, storage_url, sort_order),
   reviews(id, rating, comment, created_at, users(id, full_name, avatar_url))
@@ -18,6 +23,8 @@ const PROVIDER_SELECT = `
 
 @Injectable()
 export class ProvidersService {
+  private readonly logger = new Logger(ProvidersService.name);
+
   constructor(private supabase: SupabaseService) {}
 
   async create(userId: string, dto: CreateProviderDto) {
@@ -28,7 +35,10 @@ export class ProvidersService {
       .select()
       .single();
 
-    if (error) throw new BadRequestException(error.message);
+    if (error) {
+      this.logger.error(`Create provider failed for user ${userId}: ${error.message}`);
+      throw new BadRequestException('Não foi possível criar o perfil de prestador');
+    }
     return data;
   }
 
@@ -60,7 +70,10 @@ export class ProvidersService {
           p_limit: limit,
         });
 
-      if (rpcError) throw new BadRequestException(rpcError.message);
+      if (rpcError) {
+        this.logger.error(`providers_nearby RPC failed: ${rpcError.message}`);
+        throw new BadRequestException('Não foi possível buscar prestadores próximos');
+      }
 
       const ids: string[] = (nearby ?? []).map((r: any) => r.id);
       if (ids.length === 0) {
@@ -73,7 +86,10 @@ export class ProvidersService {
         .select(PROVIDER_SELECT)
         .in('id', ids);
 
-      if (error) throw new BadRequestException(error.message);
+      if (error) {
+        this.logger.error(`Provider nearby select failed: ${error.message}`);
+        throw new BadRequestException('Não foi possível buscar prestadores');
+      }
 
       const distanceMap = new Map(
         (nearby ?? []).map((r: any) => [r.id, r.distance_km]),
@@ -95,13 +111,22 @@ export class ProvidersService {
       .order('created_at', { ascending: false })
       .range(from, to);
 
-    if (neighborhood) req = req.ilike('neighborhood', `%${neighborhood}%`);
-    if (city) req = req.ilike('city', `%${city}%`);
+    if (neighborhood) {
+      const safe = neighborhood.replace(/%/g, '\\%').replace(/_/g, '\\_');
+      req = req.ilike('neighborhood', `%${safe}%`);
+    }
+    if (city) {
+      const safe = city.replace(/%/g, '\\%').replace(/_/g, '\\_');
+      req = req.ilike('city', `%${safe}%`);
+    }
     if (state) req = req.eq('state', state);
     if (category_id) req = req.eq('category_id', category_id);
 
     const { data, error, count } = await req;
-    if (error) throw new BadRequestException(error.message);
+    if (error) {
+      this.logger.error(`Find providers failed: ${error.message}`);
+      throw new BadRequestException('Não foi possível buscar os prestadores');
+    }
 
     return {
       data,
@@ -118,6 +143,9 @@ export class ProvidersService {
     const { data, error } = await this.supabase
       .getAdminClient()
       .from('posts')
+<<<<<<< HEAD
+      .select(PROVIDER_SELECT)
+=======
       .select(`
         *,
         users(id, full_name, avatar_url, phone, bio),
@@ -125,11 +153,19 @@ export class ProvidersService {
         post_photos(id, storage_url, sort_order),
         reviews(id, rating, comment, created_at, users(id, full_name, avatar_url))
       `)
+>>>>>>> origin/develop
       .eq('user_id', userId)
       .eq('status', 'ativo')
       .order('created_at', { ascending: false });
 
+<<<<<<< HEAD
+    if (error) {
+      this.logger.error(`Find provider me failed for user ${userId}: ${error.message}`);
+      throw new NotFoundException('Perfil de prestador não encontrado');
+    }
+=======
     if (error) throw new NotFoundException('Perfil de prestador não encontrado');
+>>>>>>> origin/develop
     return data ?? [];
   }
 
@@ -137,6 +173,9 @@ export class ProvidersService {
     const { data, error } = await this.supabase
       .getAdminClient()
       .from('posts')
+<<<<<<< HEAD
+      .select(PROVIDER_SELECT)
+=======
       .select(`
         *,
         users(id, full_name, avatar_url, phone, bio),
@@ -144,6 +183,7 @@ export class ProvidersService {
         post_photos(id, storage_url, sort_order),
         reviews(id, rating, comment, created_at, users(id, full_name, avatar_url))
       `)
+>>>>>>> origin/develop
       .eq('id', id)
       .eq('status', 'ativo')
       .single();
@@ -152,9 +192,13 @@ export class ProvidersService {
     return data;
   }
 
-  async update(userId: string, dto: UpdateProviderDto) {
+  async update(userId: string, dto: UpdateProviderDto, token: string) {
     const { data, error } = await this.supabase
+<<<<<<< HEAD
+      .getUserClient(token)
+=======
       .getAdminClient()
+>>>>>>> origin/develop
       .from('posts')
       .update(dto)
       .eq('user_id', userId)
@@ -162,18 +206,30 @@ export class ProvidersService {
       .select()
       .single();
 
-    if (error) throw new BadRequestException(error.message);
+    if (error) {
+      this.logger.error(`Update provider failed for user ${userId}: ${error.message}`);
+      throw new BadRequestException('Não foi possível atualizar o perfil');
+    }
     return data;
   }
 
-  async deactivate(userId: string) {
+  async deactivate(token: string) {
     const { error } = await this.supabase
+<<<<<<< HEAD
+      .getUserClient(token)
+      .from('posts')
+      .update({ status: 'inativo' });
+=======
       .getAdminClient()
       .from('posts')
       .update({ status: 'inativo' })
       .eq('user_id', userId);
+>>>>>>> origin/develop
 
-    if (error) throw new BadRequestException(error.message);
+    if (error) {
+      this.logger.error(`Deactivate provider failed: ${error.message}`);
+      throw new BadRequestException('Não foi possível desativar o perfil');
+    }
     return { message: 'Perfil desativado' };
   }
 }

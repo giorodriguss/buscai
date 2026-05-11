@@ -16,7 +16,11 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { SearchPostsDto } from './dto/search-posts.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+<<<<<<< HEAD
+import { BearerToken } from '../common/decorators/bearer-token.decorator';
+=======
 import { ValidCategoryPipe } from '../common/pipes/valid-category.pipe';
+>>>>>>> origin/develop
 
 @ApiTags('Posts')
 @Controller('posts')
@@ -45,8 +49,8 @@ export class PostsController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Listar meus posts' })
-  findMine(@Request() req: any) {
-    return this.postsService.findByUser(req.user.id);
+  findMine(@BearerToken() token: string) {
+    return this.postsService.findByUser(token);
   }
 
   @Get(':id')
@@ -59,18 +63,27 @@ export class PostsController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Atualizar post (somente dono)' })
+<<<<<<< HEAD
+  update(
+    @Param('id') id: string,
+    @BearerToken() token: string,
+    @Body() dto: UpdatePostDto,
+  ) {
+    return this.postsService.update(id, dto, token);
+=======
   async update(@Param('id') id: string, @Request() req: any, @Body() dto: UpdatePostDto) {
     if (dto.category_id) {
       await this.categoryPipe.transform(dto.category_id, { type: 'body' });
     }
     return this.postsService.update(id, req.user.id, dto);
+>>>>>>> origin/develop
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Remover post (somente dono)' })
-  remove(@Param('id') id: string, @Request() req: any) {
-    return this.postsService.remove(id, req.user.id);
+  remove(@Param('id') id: string, @BearerToken() token: string) {
+    return this.postsService.remove(id, token);
   }
 }

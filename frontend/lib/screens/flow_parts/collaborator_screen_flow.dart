@@ -1,15 +1,26 @@
 part of '../figma_flow.dart';
 
+<<<<<<< HEAD
+class CollaboratorScreen extends ConsumerStatefulWidget {
+=======
 class CollaboratorScreen extends StatefulWidget {
+>>>>>>> origin/develop
   final AppUser user;
 
   const CollaboratorScreen({super.key, required this.user});
 
   @override
+<<<<<<< HEAD
+  ConsumerState<CollaboratorScreen> createState() => _CollaboratorScreenState();
+}
+
+class _CollaboratorScreenState extends ConsumerState<CollaboratorScreen> {
+=======
   State<CollaboratorScreen> createState() => _CollaboratorScreenState();
 }
 
 class _CollaboratorScreenState extends State<CollaboratorScreen> {
+>>>>>>> origin/develop
   bool editingYears = false;
   bool editingAbout = false;
   bool addingService = false;
@@ -34,7 +45,11 @@ class _CollaboratorScreenState extends State<CollaboratorScreen> {
     setState(() {
       editingService = index;
       addingService = true;
+<<<<<<< HEAD
+      final service = index == null ? null : ref.read(collaboratorProvider).services[index];
+=======
       final service = index == null ? null : CollaboratorState.services[index];
+>>>>>>> origin/develop
       serviceNameController.text = service?.name ?? '';
       servicePriceController.text = service?.price ?? '';
       serviceDurationController.text = service?.duration ?? '';
@@ -47,12 +62,22 @@ class _CollaboratorScreenState extends State<CollaboratorScreen> {
       price: servicePriceController.text.trim().isEmpty ? '0' : servicePriceController.text.trim(),
       duration: serviceDurationController.text.trim().isEmpty ? '1h' : serviceDurationController.text.trim(),
     );
+<<<<<<< HEAD
+    final index = editingService;
+    if (index == null) {
+      ref.read(collaboratorProvider.notifier).addService(service);
+    } else {
+      ref.read(collaboratorProvider.notifier).editService(index, service);
+    }
+    setState(() {
+=======
     setState(() {
       if (editingService == null) {
         CollaboratorState.services.insert(0, service);
       } else {
         CollaboratorState.services[editingService!] = service;
       }
+>>>>>>> origin/develop
       addingService = false;
       editingService = null;
     });
@@ -61,6 +86,10 @@ class _CollaboratorScreenState extends State<CollaboratorScreen> {
   @override
   Widget build(BuildContext context) {
     final user = widget.user;
+<<<<<<< HEAD
+    final collab = ref.watch(collaboratorProvider);
+=======
+>>>>>>> origin/develop
     return ListView(
       padding: const EdgeInsets.only(bottom: 112),
       children: [
@@ -68,7 +97,11 @@ class _CollaboratorScreenState extends State<CollaboratorScreen> {
           clipBehavior: Clip.none,
           children: [
             Image.network(
+<<<<<<< HEAD
+              collab.coverImage,
+=======
               CollaboratorState.coverImage,
+>>>>>>> origin/develop
               height: 252,
               width: double.infinity,
               fit: BoxFit.cover,
@@ -81,7 +114,11 @@ class _CollaboratorScreenState extends State<CollaboratorScreen> {
                 backgroundColor: Colors.white,
                 child: CircleAvatar(
                   radius: 56,
+<<<<<<< HEAD
+                  backgroundColor: collab.profileColor,
+=======
                   backgroundColor: CollaboratorState.profileColor,
+>>>>>>> origin/develop
                   child: Text(user.name[0].toUpperCase(), style: const TextStyle(color: Colors.white, fontSize: 42)),
                 ),
               ),
@@ -98,6 +135,15 @@ class _CollaboratorScreenState extends State<CollaboratorScreen> {
                   Expanded(child: Text(user.name, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700))),
                   CircleButton(
                     icon: Icons.settings_outlined,
+<<<<<<< HEAD
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => EditProviderProfileScreen(user: user)),
+                    ),
+                  ),
+                ],
+              ),
+              Text(collab.category, style: const TextStyle(color: BColors.orange, fontWeight: FontWeight.w700)),
+=======
                     onTap: () async {
                       await Navigator.of(context).push(
                         MaterialPageRoute(builder: (_) => EditProviderProfileScreen(user: user)),
@@ -108,6 +154,7 @@ class _CollaboratorScreenState extends State<CollaboratorScreen> {
                 ],
               ),
               Text(CollaboratorState.category, style: const TextStyle(color: BColors.orange, fontWeight: FontWeight.w700)),
+>>>>>>> origin/develop
               const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -127,11 +174,19 @@ class _CollaboratorScreenState extends State<CollaboratorScreen> {
                       children: [
                         const CircleAvatar(radius: 24, backgroundColor: BColors.green, child: Icon(Icons.emoji_events_outlined, color: Colors.white)),
                         const SizedBox(height: 8),
+<<<<<<< HEAD
+                        Text('${collab.years} anos', textAlign: TextAlign.center, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                        const Text('Experiência', textAlign: TextAlign.center, style: TextStyle(color: BColors.gray, fontSize: 12)),
+                        GestureDetector(
+                          onTap: () => setState(() {
+                            yearsController.text = '${collab.years}';
+=======
                         Text('${CollaboratorState.years} anos', textAlign: TextAlign.center, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
                         const Text('Experiência', textAlign: TextAlign.center, style: TextStyle(color: BColors.gray, fontSize: 12)),
                         GestureDetector(
                           onTap: () => setState(() {
                             yearsController.text = '${CollaboratorState.years}';
+>>>>>>> origin/develop
                             editingYears = true;
                           }),
                           child: const Text('Editar', style: TextStyle(color: BColors.green, fontSize: 12)),
@@ -145,17 +200,30 @@ class _CollaboratorScreenState extends State<CollaboratorScreen> {
                 _InlineEditor(
                   title: 'Editar anos de experiência',
                   children: [TextInputLike(icon: Icons.emoji_events_outlined, hint: '10', controller: yearsController, keyboardType: TextInputType.number)],
+<<<<<<< HEAD
+                  onSave: () {
+                    ref.read(collaboratorProvider.notifier).setYears(
+                      int.tryParse(yearsController.text) ?? collab.years,
+                    );
+                    setState(() => editingYears = false);
+                  },
+=======
                   onSave: () => setState(() {
                     CollaboratorState.years = int.tryParse(yearsController.text) ?? CollaboratorState.years;
                     editingYears = false;
                   }),
+>>>>>>> origin/develop
                   onCancel: () => setState(() => editingYears = false),
                 ),
               const Divider(height: 32),
               _EditableSectionTitle(
                 title: 'Sobre',
                 onEdit: () => setState(() {
+<<<<<<< HEAD
+                  aboutController.text = collab.about;
+=======
                   aboutController.text = CollaboratorState.about;
+>>>>>>> origin/develop
                   editingAbout = true;
                 }),
               ),
@@ -163,6 +231,18 @@ class _CollaboratorScreenState extends State<CollaboratorScreen> {
                 _InlineEditor(
                   title: '',
                   children: [TextInputLike(icon: Icons.info_outline_rounded, hint: 'Sobre você', controller: aboutController)],
+<<<<<<< HEAD
+                  onSave: () {
+                    ref.read(collaboratorProvider.notifier).setAbout(aboutController.text.trim());
+                    setState(() => editingAbout = false);
+                  },
+                  onCancel: () => setState(() => editingAbout = false),
+                )
+              else
+                collab.about.trim().isEmpty
+                    ? const EmptyPanel(icon: Icons.info_outline_rounded, text: 'Preencha seu resumo profissional.')
+                    : Text(collab.about, style: const TextStyle(height: 1.55)),
+=======
                   onSave: () => setState(() {
                     CollaboratorState.about = aboutController.text.trim();
                     editingAbout = false;
@@ -173,6 +253,7 @@ class _CollaboratorScreenState extends State<CollaboratorScreen> {
                 CollaboratorState.about.trim().isEmpty
                     ? const EmptyPanel(icon: Icons.info_outline_rounded, text: 'Preencha seu resumo profissional.')
                     : Text(CollaboratorState.about, style: const TextStyle(height: 1.55)),
+>>>>>>> origin/develop
               const SizedBox(height: 26),
               _EditableSectionTitle(title: 'Serviços', action: '+ Cadastrar novo', onEdit: () => _startServiceEdit()),
               if (addingService)
@@ -184,6 +265,17 @@ class _CollaboratorScreenState extends State<CollaboratorScreen> {
                   onSave: _saveService,
                   onCancel: () => setState(() => addingService = false),
                 ),
+<<<<<<< HEAD
+              if (collab.services.isEmpty && !addingService)
+                const EmptyPanel(icon: Icons.work_outline_rounded, text: 'Cadastre seus serviços para eles aparecerem aqui.')
+              else
+                ...List.generate(collab.services.length, (index) {
+                  final service = collab.services[index];
+                  return _CollaboratorServiceCard(
+                    service: service,
+                    onEdit: () => _startServiceEdit(index),
+                    onDelete: () => ref.read(collaboratorProvider.notifier).removeService(index),
+=======
               if (CollaboratorState.services.isEmpty && !addingService)
                 const EmptyPanel(icon: Icons.work_outline_rounded, text: 'Cadastre seus serviços para eles aparecerem aqui.')
               else
@@ -193,11 +285,31 @@ class _CollaboratorScreenState extends State<CollaboratorScreen> {
                     service: service,
                     onEdit: () => _startServiceEdit(index),
                     onDelete: () => setState(() => CollaboratorState.services.removeAt(index)),
+>>>>>>> origin/develop
                   );
                 }),
               const SizedBox(height: 24),
               _EditableSectionTitle(
                 title: 'Dias disponíveis',
+<<<<<<< HEAD
+                onEdit: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const AvailabilityDaysScreen()),
+                ),
+              ),
+              collab.days.isEmpty
+                  ? const EmptyPanel(icon: Icons.calendar_today_outlined, text: 'Escolha seus dias de atendimento.')
+                  : _Pills(values: collab.days.toList()),
+              const SizedBox(height: 24),
+              _EditableSectionTitle(
+                title: 'Horários disponíveis',
+                onEdit: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const AvailabilityHoursScreen()),
+                ),
+              ),
+              collab.hours.isEmpty
+                  ? const EmptyPanel(icon: Icons.schedule_rounded, text: 'Escolha seus horários de atendimento.')
+                  : _Pills(values: collab.hours.toList()..sort()),
+=======
                 onEdit: () async {
                   await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AvailabilityDaysScreen()));
                   if (mounted) setState(() {});
@@ -217,26 +329,43 @@ class _CollaboratorScreenState extends State<CollaboratorScreen> {
               CollaboratorState.hours.isEmpty
                   ? const EmptyPanel(icon: Icons.schedule_rounded, text: 'Escolha seus horários de atendimento.')
                   : _Pills(values: CollaboratorState.hours.toList()..sort()),
+>>>>>>> origin/develop
               const SizedBox(height: 24),
               _EditableSectionTitle(
                 title: 'Portfólio',
                 action: 'Gerenciar',
+<<<<<<< HEAD
+                onEdit: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const PortfolioManagerScreen()),
+                ),
+              ),
+              if (collab.portfolio.isEmpty)
+=======
                 onEdit: () async {
                   await Navigator.of(context).push(MaterialPageRoute(builder: (_) => const PortfolioManagerScreen()));
                   if (mounted) setState(() {});
                 },
               ),
               if (CollaboratorState.portfolio.isEmpty)
+>>>>>>> origin/develop
                 const EmptyPanel(icon: Icons.photo_library_outlined, text: 'Adicione fotos para montar seu portfólio.')
               else
                 GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
+<<<<<<< HEAD
+                  itemCount: collab.portfolio.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12),
+                  itemBuilder: (_, index) => ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: Image.network(collab.portfolio[index], fit: BoxFit.cover),
+=======
                   itemCount: CollaboratorState.portfolio.length,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12),
                   itemBuilder: (_, index) => ClipRRect(
                     borderRadius: BorderRadius.circular(14),
                     child: Image.network(CollaboratorState.portfolio[index], fit: BoxFit.cover),
+>>>>>>> origin/develop
                   ),
                 ),
               const SizedBox(height: 28),

@@ -191,7 +191,7 @@ describe('ProvidersService', () => {
       const updated = { ...mockProvider, description: 'Nova descrição atualizada' };
       adminClient.from.mockReturnValue(makeQB({ data: updated }));
 
-      const result = await service.update('user-1', { description: 'Nova descrição atualizada' });
+      const result = await service.update('user-1', { description: 'Nova descrição atualizada' }, 'mock-token');
 
       expect(result).toEqual(updated);
     });
@@ -200,7 +200,7 @@ describe('ProvidersService', () => {
       const qb = makeQB({ data: mockProvider });
       adminClient.from.mockReturnValue(qb);
 
-      await service.update('user-1', { description: 'Nova' });
+      await service.update('user-1', { description: 'Nova' }, 'mock-token');
 
       expect(qb.eq).toHaveBeenCalledWith('id', 'user-1');
     });
@@ -208,7 +208,7 @@ describe('ProvidersService', () => {
     it('lança BadRequestException em caso de erro no banco', async () => {
       adminClient.from.mockReturnValue(makeQB({ error: { message: 'Registro não encontrado' } }));
 
-      await expect(service.update('user-1', { description: 'X' })).rejects.toThrow(BadRequestException);
+      await expect(service.update('user-1', { description: 'X' }, 'mock-token')).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -216,7 +216,7 @@ describe('ProvidersService', () => {
     it('desativa perfil do prestador com sucesso', async () => {
       adminClient.from.mockReturnValue(makeQB());
 
-      const result = await service.deactivate('user-1');
+      const result = await service.deactivate('mock-token');
 
       expect(result).toEqual({ message: 'Perfil desativado' });
     });
@@ -225,7 +225,7 @@ describe('ProvidersService', () => {
       const qb = makeQB();
       adminClient.from.mockReturnValue(qb);
 
-      await service.deactivate('user-1');
+      await service.deactivate('mock-token');
 
       expect(qb.update).toHaveBeenCalledWith({ is_active: false });
       expect(qb.eq).toHaveBeenCalledWith('id', 'user-1');
@@ -234,7 +234,7 @@ describe('ProvidersService', () => {
     it('lança BadRequestException em caso de erro no banco', async () => {
       adminClient.from.mockReturnValue(makeQB({ error: { message: 'Erro ao desativar' } }));
 
-      await expect(service.deactivate('user-1')).rejects.toThrow(BadRequestException);
+      await expect(service.deactivate('mock-token')).rejects.toThrow(BadRequestException);
     });
   });
 });

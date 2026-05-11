@@ -60,7 +60,7 @@ describe('ReviewsService', () => {
         .mockReturnValueOnce(mockUpdateRating()[0])
         .mockReturnValueOnce(mockUpdateRating()[1]);
 
-      const result = await service.create(reviewerId, dto);
+      const result = await service.create(reviewerId, dto, 'mock-token');
 
       expect(result).toEqual(mockReview);
       expect(adminClient.from).toHaveBeenCalledWith('posts');
@@ -70,7 +70,7 @@ describe('ReviewsService', () => {
     it('lança ForbiddenException quando revisor tenta avaliar próprio post', async () => {
       adminClient.from.mockReturnValue(makeQB({ data: { user_id: reviewerId } }));
 
-      await expect(service.create(reviewerId, dto)).rejects.toThrow(
+      await expect(service.create(reviewerId, dto, 'mock-token')).rejects.toThrow(
         new ForbiddenException('Você não pode avaliar seu próprio post'),
       );
     });
@@ -83,7 +83,7 @@ describe('ReviewsService', () => {
         .mockReturnValueOnce(mockUpdateRating()[0])
         .mockReturnValueOnce(mockUpdateRating()[1]);
 
-      const result = await service.create(reviewerId, dto);
+      const result = await service.create(reviewerId, dto, 'mock-token');
 
       expect(result).toEqual(mockReview);
     });
@@ -93,7 +93,7 @@ describe('ReviewsService', () => {
         .mockReturnValueOnce(makeQB({ data: { user_id: 'outro-user' } }))
         .mockReturnValueOnce(makeQB({ error: { message: 'Avaliação duplicada' } }));
 
-      await expect(service.create(reviewerId, dto)).rejects.toThrow(BadRequestException);
+      await expect(service.create(reviewerId, dto, 'mock-token')).rejects.toThrow(BadRequestException);
     });
 
     it('passa reviewer_id corretamente ao inserir', async () => {
@@ -104,7 +104,7 @@ describe('ReviewsService', () => {
         .mockReturnValueOnce(mockUpdateRating()[0])
         .mockReturnValueOnce(mockUpdateRating()[1]);
 
-      await service.create(reviewerId, dto);
+      await service.create(reviewerId, dto, 'mock-token');
 
       expect(insertQB.insert).toHaveBeenCalledWith(
         expect.objectContaining({ reviewer_id: reviewerId, post_id: dto.post_id, rating: dto.rating }),

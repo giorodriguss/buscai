@@ -7,13 +7,32 @@ class SignupScreen extends StatefulWidget {
   State<SignupScreen> createState() => _SignupScreenState();
 }
 
+<<<<<<< HEAD
+class _SignupScreenState extends State<SignupScreen>
+    with DebouncedValidationMixin {
+=======
 class _SignupScreenState extends State<SignupScreen> {
+>>>>>>> origin/develop
   final nameController = TextEditingController();
   final emailController = TextEditingController();
   final phoneController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
   final validation = <String>{};
+<<<<<<< HEAD
+
+  String? get emailError => FormValidators.email(emailController.text.trim());
+  String? get phoneError => FormValidators.phone(phoneController.text.trim());
+  String? get passwordError => FormValidators.password(passwordController.text);
+  String? get confirmPasswordError =>
+      FormValidators.confirmPassword(confirmPasswordController.text, passwordController.text);
+
+  void _showValidation(String field) => setState(() => validation.add(field));
+
+  @override
+  void dispose() {
+    cancelValidationDebounce();
+=======
   Timer? validationDebounce;
 
   String? get emailError {
@@ -59,12 +78,16 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   void dispose() {
+>>>>>>> origin/develop
     nameController.dispose();
     emailController.dispose();
     phoneController.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();
+<<<<<<< HEAD
+=======
     validationDebounce?.cancel();
+>>>>>>> origin/develop
     super.dispose();
   }
 
@@ -114,11 +137,18 @@ class _SignupScreenState extends State<SignupScreen> {
     }
     setState(() => _loading = true);
     try {
+<<<<<<< HEAD
+      await AuthRepository.register(
+        fullName: name,
+        email: email,
+        password: password,
+=======
       await AuthApiService.instance.register(
         fullName: name,
         email: email,
         password: password,
         role: 'cliente',
+>>>>>>> origin/develop
         phone: phone,
       );
       if (!mounted) return;
@@ -149,10 +179,17 @@ class _SignupScreenState extends State<SignupScreen> {
       subtitle: 'Crie sua conta para encontrar profissionais',
       fields: [
         FieldSpec(Icons.person_outline_rounded, 'Nome completo', TextInputType.name, false, controller: nameController),
+<<<<<<< HEAD
+        FieldSpec(Icons.mail_outline_rounded, 'E-mail', TextInputType.emailAddress, false, controller: emailController, errorText: validation.contains('email') ? emailError : null, onChanged: (_) => queueValidation(validation, 'email'), onEditingComplete: () => _showValidation('email')),
+        FieldSpec(Icons.phone_outlined, '00 90000-0000', TextInputType.phone, false, controller: phoneController, errorText: validation.contains('phone') ? phoneError : null, inputFormatters: const [PhoneInputFormatter()], onChanged: (_) => queueValidation(validation, 'phone'), onEditingComplete: () => _showValidation('phone')),
+        FieldSpec(Icons.lock_outline_rounded, 'Senha', TextInputType.visiblePassword, true, controller: passwordController, errorText: validation.contains('password') ? passwordError : null, inputFormatters: [LengthLimitingTextInputFormatter(12)], onChanged: (_) => queueValidation(validation, 'password'), onEditingComplete: () => _showValidation('password')),
+        FieldSpec(Icons.lock_outline_rounded, 'Confirmar senha', TextInputType.visiblePassword, true, controller: confirmPasswordController, errorText: validation.contains('confirm') ? confirmPasswordError : null, inputFormatters: [LengthLimitingTextInputFormatter(12)], onChanged: (_) => queueValidation(validation, 'confirm'), onEditingComplete: () => _showValidation('confirm')),
+=======
         FieldSpec(Icons.mail_outline_rounded, 'E-mail', TextInputType.emailAddress, false, controller: emailController, errorText: validation.contains('email') ? emailError : null, onChanged: (_) => _queueValidation('email'), onEditingComplete: () => _showValidation('email')),
         FieldSpec(Icons.phone_outlined, '00 90000-0000', TextInputType.phone, false, controller: phoneController, errorText: validation.contains('phone') ? phoneError : null, inputFormatters: const [PhoneInputFormatter()], onChanged: (_) => _queueValidation('phone'), onEditingComplete: () => _showValidation('phone')),
         FieldSpec(Icons.lock_outline_rounded, 'Senha', TextInputType.visiblePassword, true, controller: passwordController, errorText: validation.contains('password') ? passwordError : null, inputFormatters: [LengthLimitingTextInputFormatter(12)], onChanged: (_) => _queueValidation('password'), onEditingComplete: () => _showValidation('password')),
         FieldSpec(Icons.lock_outline_rounded, 'Confirmar senha', TextInputType.visiblePassword, true, controller: confirmPasswordController, errorText: validation.contains('confirm') ? confirmPasswordError : null, inputFormatters: [LengthLimitingTextInputFormatter(12)], onChanged: (_) => _queueValidation('confirm'), onEditingComplete: () => _showValidation('confirm')),
+>>>>>>> origin/develop
       ],
       primaryLabel: _loading ? 'Criando conta...' : 'Criar conta',
       onPrimary: _loading ? () {} : _createAccount,
@@ -164,6 +201,9 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 }
+<<<<<<< HEAD
+=======
 
 // Cadastro do prestador. Ele cria usuario com isProvider=true e limpa o painel
 // Colaborador para a pessoa preencher servicos, disponibilidade e portfolio.
+>>>>>>> origin/develop

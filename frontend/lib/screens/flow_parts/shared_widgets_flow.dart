@@ -1443,3 +1443,170 @@ void openProvider(BuildContext context, Provider provider) {
     MaterialPageRoute(builder: (_) => ProviderProfileScreen(provider: provider)),
   );
 }
+<<<<<<< HEAD
+
+// ─── Shared loading indicator ─────────────────────────────────────────────────
+
+class AppLoadingIndicator extends StatelessWidget {
+  final double verticalPadding;
+
+  const AppLoadingIndicator({super.key, this.verticalPadding = 32});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: verticalPadding),
+        child: const CircularProgressIndicator(color: BColors.green),
+      ),
+    );
+  }
+}
+
+// ─── Form validators ──────────────────────────────────────────────────────────
+
+class FormValidators {
+  static String? email(String value) {
+    if (value.isEmpty || _isValidEmail(value)) return null;
+    return 'Use um e-mail válido no formato nome@email.com';
+  }
+
+  static String? phone(String value) {
+    if (value.isEmpty || _isValidPhone(value)) return null;
+    return 'Use o formato 00 90000-0000';
+  }
+
+  static String? password(String value) {
+    if (value.isEmpty || (value.length >= 6 && value.length <= 12)) return null;
+    return 'A senha deve ter de 6 a 12 caracteres';
+  }
+
+  static String? confirmPassword(String value, String original) {
+    if (value.isEmpty || value == original) return null;
+    return 'As senhas não conferem';
+  }
+}
+
+// ─── Debounced validation mixin ───────────────────────────────────────────────
+
+mixin DebouncedValidationMixin on State {
+  Timer? _validationDebounce;
+
+  void queueValidation(Set<String> validation, String field) {
+    _validationDebounce?.cancel();
+    _validationDebounce = Timer(const Duration(milliseconds: 650), () {
+      if (mounted) setState(() => validation.add(field));
+    });
+  }
+
+  void cancelValidationDebounce() => _validationDebounce?.cancel();
+}
+
+// ─── Async load mixin ─────────────────────────────────────────────────────────
+
+mixin AsyncLoadMixin on State {
+  Future<void> runAsync<T>({
+    required Future<T> Function() call,
+    required void Function(T data) onSuccess,
+    required VoidCallback setLoadingTrue,
+    required VoidCallback setLoadingFalse,
+  }) async {
+    setState(setLoadingTrue);
+    try {
+      final result = await call();
+      if (mounted) setState(() => onSuccess(result));
+    } catch (_) {
+      // silently fall through — callers rely on fallback state
+    } finally {
+      if (mounted) setState(setLoadingFalse);
+    }
+  }
+}
+
+// ─── Provider filter ──────────────────────────────────────────────────────────
+
+class ProviderFilter {
+  static List<Provider> apply({
+    required List<Provider> base,
+    required String query,
+    required String selectedCategory,
+    required String? selectedFilter,
+  }) {
+    var result = [...base];
+    if (query.trim().isNotEmpty) {
+      final q = query.toLowerCase();
+      result = result
+          .where((p) =>
+              p.name.toLowerCase().contains(q) ||
+              p.category.toLowerCase().contains(q) ||
+              p.about.toLowerCase().contains(q))
+          .toList();
+    }
+    if (selectedCategory != 'Todos') {
+      result = result.where((p) => p.category == selectedCategory).toList();
+    }
+    if (selectedFilter == 'Mais avaliados') {
+      result.sort((a, b) => b.rating.compareTo(a.rating));
+    } else if (selectedFilter == 'Mais próximos') {
+      result.sort((a, b) => a.distance.compareTo(b.distance));
+    } else if (selectedFilter == 'Disponível agora') {
+      result = result.where((p) => p.availableHours.isNotEmpty).toList();
+    }
+    return result;
+  }
+
+  static List<String> categoriesFor(String category) {
+    return switch (category) {
+      'Manutenção' => ['Encanador', 'Eletricista', 'Pintor', 'Marceneiro'],
+      'Estética' => ['Manicure', 'Cabeleireira'],
+      'Automotivo' => ['Mecânico'],
+      'Limpeza' => ['Diarista'],
+      'Casa' => ['Encanador', 'Eletricista', 'Pintor', 'Marceneiro'],
+      _ => [],
+    };
+  }
+}
+
+// ─── Forgot password page ─────────────────────────────────────────────────────
+
+class ForgotPasswordPage extends StatelessWidget {
+  final VoidCallback onBack;
+  final String subtitle;
+  final Color primaryColor;
+  final bool showAppBar;
+
+  const ForgotPasswordPage({
+    super.key,
+    required this.onBack,
+    this.subtitle = 'Digite seu e-mail para receber o link de recuperação',
+    this.primaryColor = BColors.orange,
+    this.showAppBar = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AuthPage(
+      showBack: showAppBar,
+      appBarTitle: showAppBar ? 'Recuperar senha' : null,
+      centered: true,
+      logoSize: 112,
+      title: 'Recuperar senha',
+      subtitle: subtitle,
+      fields: const [
+        FieldSpec(Icons.mail_outline_rounded, 'Seu e-mail', TextInputType.emailAddress, false),
+      ],
+      primaryLabel: 'Enviar link',
+      primaryColor: primaryColor,
+      onPrimary: onBack,
+      footer: TextButton(
+        onPressed: onBack,
+        child: const Text(
+          'Voltar para login',
+          style: TextStyle(color: BColors.orange),
+        ),
+      ),
+    );
+  }
+}
+=======
+>>>>>>> origin/develop

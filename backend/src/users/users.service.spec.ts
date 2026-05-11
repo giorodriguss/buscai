@@ -90,7 +90,7 @@ describe('UsersService', () => {
       const updated = { ...mockUser, ...updateDto };
       adminClient.from.mockReturnValue(makeQB({ data: updated }));
 
-      const result = await service.update('user-1', updateDto);
+      const result = await service.update('user-1', updateDto, 'mock-token');
 
       expect(result).toEqual(updated);
       expect(adminClient.from).toHaveBeenCalledWith('users');
@@ -100,7 +100,7 @@ describe('UsersService', () => {
       const qb = makeQB({ data: mockUser });
       adminClient.from.mockReturnValue(qb);
 
-      await service.update('user-1', updateDto);
+      await service.update('user-1', updateDto, 'mock-token');
 
       expect(qb.eq).toHaveBeenCalledWith('id', 'user-1');
       expect(qb.update).toHaveBeenCalledWith(updateDto);
@@ -109,7 +109,7 @@ describe('UsersService', () => {
     it('lança BadRequestException quando update falha no banco', async () => {
       adminClient.from.mockReturnValue(makeQB({ error: { message: 'Erro ao atualizar' } }));
 
-      await expect(service.update('user-1', updateDto)).rejects.toThrow(BadRequestException);
+      await expect(service.update('user-1', updateDto, 'mock-token')).rejects.toThrow(BadRequestException);
     });
 
     it('aceita atualização parcial dos campos', async () => {
@@ -118,7 +118,7 @@ describe('UsersService', () => {
       const qb = makeQB({ data: updated });
       adminClient.from.mockReturnValue(qb);
 
-      const result = await service.update('user-1', partialUpdate);
+      const result = await service.update('user-1', partialUpdate, 'mock-token');
 
       expect(result.bio).toBe('Desenvolvedor freelancer');
       expect(qb.update).toHaveBeenCalledWith(partialUpdate);

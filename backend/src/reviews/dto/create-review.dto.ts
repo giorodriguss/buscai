@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, Max, Min } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, Max, MaxLength, Min } from 'class-validator';
 
 export class CreateReviewDto {
   @ApiProperty({ example: 'uuid-do-post' })
@@ -16,5 +16,6 @@ export class CreateReviewDto {
   @IsString()
   @IsNotEmpty()
   @IsOptional()
+  @MaxLength(1000)
   comment?: string;
 }

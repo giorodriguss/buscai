@@ -16,7 +16,11 @@ import { CreateProviderDto } from './dto/create-provider.dto';
 import { UpdateProviderDto } from './dto/update-provider.dto';
 import { SearchProvidersDto } from './dto/search-providers.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+<<<<<<< HEAD
+import { BearerToken } from '../common/decorators/bearer-token.decorator';
+=======
 import { ValidCategoryPipe } from '../common/pipes/valid-category.pipe';
+>>>>>>> origin/develop
 
 @ApiTags('Providers')
 @Controller('providers')
@@ -59,18 +63,27 @@ export class ProvidersController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Atualizar perfil do prestador autenticado' })
+<<<<<<< HEAD
+  update(
+    @Request() req: any,
+    @BearerToken() token: string,
+    @Body() dto: UpdateProviderDto,
+  ) {
+    return this.providersService.update(req.user.id, dto, token);
+=======
   async update(@Request() req: any, @Body() dto: UpdateProviderDto) {
     if (dto.category_id) {
       await this.categoryPipe.transform(dto.category_id, { type: 'body' });
     }
     return this.providersService.update(req.user.id, dto);
+>>>>>>> origin/develop
   }
 
   @Delete()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Desativar perfil do prestador' })
-  deactivate(@Request() req: any) {
-    return this.providersService.deactivate(req.user.id);
+  deactivate(@BearerToken() token: string) {
+    return this.providersService.deactivate(token);
   }
 }

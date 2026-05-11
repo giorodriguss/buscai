@@ -1,7 +1,8 @@
-import { Controller, Get, Request, UseGuards } from '@nestjs/common';
+import { Controller, Get, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SubscriptionsService } from './subscriptions.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { BearerToken } from '../common/decorators/bearer-token.decorator';
 
 @ApiTags('Subscriptions')
 @Controller('subscriptions')
@@ -12,7 +13,7 @@ export class SubscriptionsController {
 
   @Get('me')
   @ApiOperation({ summary: 'Consultar minha assinatura e limites' })
-  findMine(@Request() req: any) {
-    return this.subscriptionsService.findByUser(req.user.id);
+  findMine(@BearerToken() token: string) {
+    return this.subscriptionsService.findByUser(token);
   }
 }

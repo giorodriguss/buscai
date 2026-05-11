@@ -20,6 +20,16 @@ IconData _addressIconFor(String type) {
   return Icons.home_outlined;
 }
 
+<<<<<<< HEAD
+class AddressSelectionScreen extends ConsumerStatefulWidget {
+  const AddressSelectionScreen({super.key});
+
+  @override
+  ConsumerState<AddressSelectionScreen> createState() => _AddressSelectionScreenState();
+}
+
+class _AddressSelectionScreenState extends ConsumerState<AddressSelectionScreen> {
+=======
 // Enderecos salvos do usuario. Hoje salva localmente na AppSession; depois deve
 // chamar API de enderecos e preencher rua/cidade/estado via CEP.
 class AddressSelectionScreen extends StatefulWidget {
@@ -30,6 +40,7 @@ class AddressSelectionScreen extends StatefulWidget {
 }
 
 class _AddressSelectionScreenState extends State<AddressSelectionScreen> {
+>>>>>>> origin/develop
   bool adding = false;
   int? editingAddressIndex;
 
@@ -55,6 +66,15 @@ class _AddressSelectionScreenState extends State<AddressSelectionScreen> {
   }
 
   void _saveAddress(_SavedAddress address) {
+<<<<<<< HEAD
+    final index = editingAddressIndex;
+    if (index == null) {
+      ref.read(sessionProvider.notifier).addAddress(address);
+    } else {
+      ref.read(sessionProvider.notifier).editAddress(index, address);
+    }
+    setState(() {
+=======
     // Futuro backend: salvar/editar endereço deve persistir no usuário logado.
     // CEP deve preencher rua/cidade/estado via serviço de CEP antes de salvar.
     setState(() {
@@ -66,6 +86,7 @@ class _AddressSelectionScreenState extends State<AddressSelectionScreen> {
         AppSession.savedAddresses[index] = address;
         AppSession.selectedAddress = index;
       }
+>>>>>>> origin/develop
       adding = false;
       editingAddressIndex = null;
     });
@@ -73,6 +94,10 @@ class _AddressSelectionScreenState extends State<AddressSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
+<<<<<<< HEAD
+    final session = ref.watch(sessionProvider);
+=======
+>>>>>>> origin/develop
     return Scaffold(
       backgroundColor: BColors.paper,
       appBar: const _GreenAppBar(title: 'Endereço de atendimento'),
@@ -80,7 +105,13 @@ class _AddressSelectionScreenState extends State<AddressSelectionScreen> {
         top: false,
         child: adding
             ? _AddressForm(
+<<<<<<< HEAD
+                initialAddress: editingAddressIndex == null
+                    ? null
+                    : session.savedAddresses[editingAddressIndex!],
+=======
                 initialAddress: editingAddressIndex == null ? null : AppSession.savedAddresses[editingAddressIndex!],
+>>>>>>> origin/develop
                 onCancel: _closeForm,
                 onSave: _saveAddress,
               )
@@ -92,16 +123,27 @@ class _AddressSelectionScreenState extends State<AddressSelectionScreen> {
                       children: [
                         const Text('Endereços salvos', style: TextStyle(fontWeight: FontWeight.w700)),
                         const SizedBox(height: 18),
+<<<<<<< HEAD
+                        ...List.generate(session.savedAddresses.length, (index) {
+                          final address = session.savedAddresses[index];
+=======
                         ...List.generate(AppSession.savedAddresses.length, (index) {
                           final address = AppSession.savedAddresses[index];
+>>>>>>> origin/develop
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 14),
                             child: AddressTile(
                               title: address.title,
                               subtitle: address.subtitle,
+<<<<<<< HEAD
+                              selected: session.selectedAddress == index,
+                              icon: address.icon,
+                              onTap: () => ref.read(sessionProvider.notifier).selectAddress(index),
+=======
                               selected: AppSession.selectedAddress == index,
                               icon: address.icon,
                               onTap: () => setState(() => AppSession.selectedAddress = index),
+>>>>>>> origin/develop
                               onEdit: () => _editAddress(index),
                             ),
                           );

@@ -23,6 +23,13 @@ class _LoginProviderScreenState extends State<LoginProviderScreen> {
   @override
   Widget build(BuildContext context) {
     if (forgotPassword) {
+<<<<<<< HEAD
+      return ForgotPasswordPage(
+        onBack: () => setState(() => forgotPassword = false),
+        subtitle: 'Digite seu e-mail profissional para receber o link de recuperação',
+        primaryColor: BColors.green,
+        showAppBar: true,
+=======
       return AuthPage(
         showBack: true,
         appBarTitle: 'Recuperar senha',
@@ -40,6 +47,7 @@ class _LoginProviderScreenState extends State<LoginProviderScreen> {
           onPressed: () => setState(() => forgotPassword = false),
           child: const Text('Voltar para login', style: TextStyle(color: BColors.orange)),
         ),
+>>>>>>> origin/develop
       );
     }
     return AuthPage(
@@ -83,6 +91,9 @@ class _LoginProviderScreenState extends State<LoginProviderScreen> {
     );
   }
 }
+<<<<<<< HEAD
+=======
 
 // Cadastro do usuario comum. Valida tudo localmente e grava AppSession.currentUser
 // para refletir imediatamente nome, telefone e dados nas telas do prototipo.
+>>>>>>> origin/develop

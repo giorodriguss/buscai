@@ -6,6 +6,7 @@ import {
   IsOptional,
   IsString,
   Length,
+  MaxLength,
   MinLength,
 } from 'class-validator';
 import { IsWhatsApp } from '../../common/validators/is-whatsapp.validator';
@@ -14,6 +15,7 @@ export class RegisterDto {
   @ApiProperty({ example: 'João Silva' })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(100)
   full_name: string;
 
   @ApiProperty({ example: 'joao@email.com' })
@@ -38,11 +40,13 @@ export class RegisterDto {
   @ApiProperty({ example: 'Centro', required: false })
   @IsString()
   @IsOptional()
+  @MaxLength(100)
   neighborhood?: string;
 
   @ApiProperty({ example: 'São Paulo', required: false })
   @IsString()
   @IsOptional()
+  @MaxLength(100)
   city?: string;
 
   @ApiProperty({ example: 'SP', required: false, maxLength: 2 })
