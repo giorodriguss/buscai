@@ -6,8 +6,29 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.enableCors();
+  
+  const rawOrigins = process.env.ALLOWED_ORIGINS;
+  const allowedOrigins: string[] = rawOrigins
+    ? rawOrigins.split(',').map((o) => o.trim()).filter(Boolean)
+    : [];
 
+  app.enableCors({
+    origin: allowedOrigins.length > 0
+      ? (origin, callback) => {
+         
+          if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+          } else {
+            callback(new Error(`Origin '${origin}' não permitida pelo CORS`));
+          }
+        }
+      : true, 
+    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+  });
+
+  // ── Validação global ─────────────────────────────────────────────────────────
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -16,6 +37,7 @@ async function bootstrap() {
     }),
   );
 
+  // ── Swagger ──────────────────────────────────────────────────────────────────
   const config = new DocumentBuilder()
     .setTitle('Buscaí API')
     .setDescription('API do aplicativo Buscaí — catálogo hiper-local de serviços')

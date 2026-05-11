@@ -38,14 +38,11 @@ class AuthPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: BColors.paper,
-      appBar: showBack && appBarTitle != null
-          ? _GreenAppBar(title: appBarTitle!)
-          : null,
+      appBar: showBack && appBarTitle != null ? _GreenAppBar(title: appBarTitle!) : null,
       body: SafeArea(
         top: appBarTitle == null,
         child: ListView(
-          padding: EdgeInsets.fromLTRB(
-              32, showBack && appBarTitle == null ? 22 : 86, 32, 28),
+          padding: EdgeInsets.fromLTRB(32, showBack && appBarTitle == null ? 22 : 86, 32, 28),
           children: [
             if (showBack && appBarTitle == null)
               Align(
@@ -91,11 +88,9 @@ class AuthPage extends StatelessWidget {
                 ),
               ),
             ),
-            if (forgot != null)
-              Align(alignment: Alignment.centerRight, child: forgot!),
+            if (forgot != null) Align(alignment: Alignment.centerRight, child: forgot!),
             const SizedBox(height: 8),
-            PrimaryButton(
-                label: primaryLabel, color: primaryColor, onPressed: onPrimary),
+            PrimaryButton(label: primaryLabel, color: primaryColor, onPressed: onPrimary),
             if (secondaryLabel != null) ...[
               const SizedBox(height: 14),
               SizedBox(
@@ -107,8 +102,7 @@ class AuthPage extends StatelessWidget {
                     backgroundColor: BColors.green,
                     foregroundColor: BColors.paper,
                     shape: const StadiumBorder(),
-                    textStyle: const TextStyle(
-                        fontFamily: 'Georgia', fontWeight: FontWeight.w700),
+                    textStyle: const TextStyle(fontFamily: 'Georgia', fontWeight: FontWeight.w700),
                   ),
                   child: Text(secondaryLabel!),
                 ),
@@ -171,9 +165,7 @@ class ProviderCard extends StatelessWidget {
             children: [
               Avatar(provider: provider, size: 52),
               const SizedBox(height: 10),
-              Text(provider.name,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: BColors.black)),
+              Text(provider.name, overflow: TextOverflow.ellipsis, style: const TextStyle(color: BColors.black)),
               const SizedBox(height: 3),
               Text(
                 provider.category.toUpperCase(),
@@ -182,12 +174,9 @@ class ProviderCard extends StatelessWidget {
               const SizedBox(height: 6),
               Row(
                 children: [
-                  const Icon(Icons.star_rounded,
-                      size: 14, color: BColors.orange),
+                  const Icon(Icons.star_rounded, size: 14, color: BColors.orange),
                   const SizedBox(width: 4),
-                  Text('${provider.rating}',
-                      style:
-                          const TextStyle(color: BColors.gray, fontSize: 12)),
+                  Text('${provider.rating}', style: const TextStyle(color: BColors.gray, fontSize: 12)),
                 ],
               ),
             ],
@@ -201,8 +190,7 @@ class ProviderCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          gradient:
-              const LinearGradient(colors: [BColors.green, BColors.greenDark]),
+          gradient: const LinearGradient(colors: [BColors.green, BColors.greenDark]),
           borderRadius: BorderRadius.circular(14),
           boxShadow: const [
             BoxShadow(
@@ -234,27 +222,17 @@ class ProviderCard extends StatelessWidget {
                   const SizedBox(height: 10),
                   Row(
                     children: [
-                      const Icon(Icons.star_rounded,
-                          size: 14, color: BColors.orange),
+                      const Icon(Icons.star_rounded, size: 14, color: BColors.orange),
                       const SizedBox(width: 3),
-                      Text('${provider.rating}',
-                          style: const TextStyle(
-                              color: Color(0xCCF7F4EF), fontSize: 12)),
-                      const Text('  •  ',
-                          style: TextStyle(
-                              color: Color(0xCCF7F4EF), fontSize: 12)),
-                      Text(provider.distance,
-                          style: const TextStyle(
-                              color: Color(0xCCF7F4EF), fontSize: 12)),
-                      const Text('  •  ',
-                          style: TextStyle(
-                              color: Color(0xCCF7F4EF), fontSize: 12)),
+                      Text('${provider.rating}', style: const TextStyle(color: Color(0xCCF7F4EF), fontSize: 12)),
+                      const Text('  •  ', style: TextStyle(color: Color(0xCCF7F4EF), fontSize: 12)),
+                      Text(provider.distance, style: const TextStyle(color: Color(0xCCF7F4EF), fontSize: 12)),
+                      const Text('  •  ', style: TextStyle(color: Color(0xCCF7F4EF), fontSize: 12)),
                       Expanded(
                         child: Text(
                           provider.priceRange,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                              color: Color(0xCCF7F4EF), fontSize: 12),
+                          style: const TextStyle(color: Color(0xCCF7F4EF), fontSize: 12),
                         ),
                       ),
                     ],
@@ -265,10 +243,8 @@ class ProviderCard extends StatelessWidget {
             Container(
               width: 42,
               height: 42,
-              decoration: const BoxDecoration(
-                  color: BColors.whatsapp, shape: BoxShape.circle),
-              child: const Icon(Icons.chat_bubble_outline_rounded,
-                  color: Colors.white, size: 20),
+              decoration: const BoxDecoration(color: BColors.whatsapp, shape: BoxShape.circle),
+              child: const Icon(Icons.chat_bubble_outline_rounded, color: Colors.white, size: 20),
             ),
           ],
         ),
@@ -291,26 +267,22 @@ class _ServiceCarouselState extends State<ServiceCarousel> {
   Timer? timer;
   final services = const [
     (
-      image:
-          'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=800&h=400&fit=crop',
+      image: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=800&h=400&fit=crop',
       title: 'Que tal fazer as unhas hoje?',
       subtitle: 'Manicures e pedicures perto de você',
     ),
     (
-      image:
-          'https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=800&h=400&fit=crop',
+      image: 'https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=800&h=400&fit=crop',
       title: 'Problema elétrico?',
       subtitle: 'Eletricistas prontos para ajudar',
     ),
     (
-      image:
-          'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&h=400&fit=crop',
+      image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&h=400&fit=crop',
       title: 'Casa brilhando em minutos',
       subtitle: 'Profissionais de limpeza confiáveis',
     ),
     (
-      image:
-          'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=800&h=400&fit=crop',
+      image: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=800&h=400&fit=crop',
       title: 'Renove sua casa',
       subtitle: 'Pintores profissionais do seu bairro',
     ),
@@ -368,9 +340,7 @@ class _ServiceCarouselState extends State<ServiceCarousel> {
                     ),
                   ),
                   const SizedBox(height: 5),
-                  Text(service.subtitle,
-                      style:
-                          const TextStyle(color: Colors.white, fontSize: 14)),
+                  Text(service.subtitle, style: const TextStyle(color: Colors.white, fontSize: 14)),
                 ],
               ),
             ),
@@ -388,9 +358,7 @@ class _ServiceCarouselState extends State<ServiceCarousel> {
                     height: 6,
                     margin: const EdgeInsets.symmetric(horizontal: 3),
                     decoration: BoxDecoration(
-                      color: i == index
-                          ? Colors.white
-                          : Colors.white.withOpacity(.5),
+                      color: i == index ? Colors.white : Colors.white.withOpacity(.5),
                       borderRadius: BorderRadius.circular(6),
                     ),
                   ),
@@ -427,8 +395,7 @@ class BottomNav extends StatelessWidget {
     ];
 
     return Container(
-      padding: EdgeInsets.fromLTRB(
-          10, 10, 10, MediaQuery.of(context).padding.bottom + 12),
+      padding: EdgeInsets.fromLTRB(10, 10, 10, MediaQuery.of(context).padding.bottom + 12),
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(top: BorderSide(color: BColors.border)),
@@ -442,8 +409,7 @@ class BottomNav extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(items[i].$1,
-                    color: active ? BColors.orange : BColors.gray),
+                Icon(items[i].$1, color: active ? BColors.orange : BColors.gray),
                 const SizedBox(height: 3),
                 Text(
                   items[i].$2,
@@ -475,8 +441,7 @@ class Avatar extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(color: Colors.white, width: size > 80 ? 4 : 0),
-        image: DecorationImage(
-            image: NetworkImage(provider.image), fit: BoxFit.cover),
+        image: DecorationImage(image: NetworkImage(provider.image), fit: BoxFit.cover),
       ),
     );
   }
@@ -509,8 +474,7 @@ class PrimaryButton extends StatelessWidget {
           backgroundColor: color,
           foregroundColor: Colors.white,
           shape: const StadiumBorder(),
-          textStyle: const TextStyle(
-              fontFamily: 'Georgia', fontWeight: FontWeight.w700),
+          textStyle: const TextStyle(fontFamily: 'Georgia', fontWeight: FontWeight.w700),
         ),
       ),
     );
@@ -523,12 +487,7 @@ class SearchField extends StatelessWidget {
   final TextEditingController? controller;
   final ValueChanged<String>? onChanged;
 
-  const SearchField(
-      {super.key,
-      required this.hint,
-      this.value,
-      this.controller,
-      this.onChanged});
+  const SearchField({super.key, required this.hint, this.value, this.controller, this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -612,8 +571,7 @@ class TextInputLike extends StatelessWidget {
         errorText: errorText,
         errorMaxLines: 2,
         prefixIcon: Icon(icon, color: BColors.gray),
-        suffixIcon:
-            suffixIcon == null ? null : Icon(suffixIcon, color: BColors.gray),
+        suffixIcon: suffixIcon == null ? null : Icon(suffixIcon, color: BColors.gray),
         filled: true,
         fillColor: Colors.white,
         contentPadding: const EdgeInsets.symmetric(vertical: 14),
@@ -639,11 +597,7 @@ class HorizontalChips extends StatelessWidget {
   final String? selected;
   final ValueChanged<String> onTap;
 
-  const HorizontalChips(
-      {super.key,
-      required this.values,
-      required this.selected,
-      required this.onTap});
+  const HorizontalChips({super.key, required this.values, required this.selected, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -661,8 +615,7 @@ class HorizontalChips extends StatelessWidget {
               decoration: BoxDecoration(
                 color: active ? BColors.green : Colors.white,
                 borderRadius: BorderRadius.circular(999),
-                border: Border.all(
-                    color: active ? BColors.green : BColors.border, width: 2),
+                border: Border.all(color: active ? BColors.green : BColors.border, width: 2),
               ),
               child: Center(
                 child: Text(
@@ -709,8 +662,7 @@ class _GreenAppBar extends StatelessWidget implements PreferredSizeWidget {
   const _GreenAppBar({required this.title, this.bottom});
 
   @override
-  Size get preferredSize =>
-      Size.fromHeight(kToolbarHeight + (bottom?.preferredSize.height ?? 0));
+  Size get preferredSize => Size.fromHeight(kToolbarHeight + (bottom?.preferredSize.height ?? 0));
 
   @override
   Widget build(BuildContext context) {
@@ -720,8 +672,7 @@ class _GreenAppBar extends StatelessWidget implements PreferredSizeWidget {
       elevation: 0,
       centerTitle: false,
       titleSpacing: 0,
-      title: Text(title,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+      title: Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
       bottom: bottom,
     );
   }
@@ -732,11 +683,7 @@ class SimplePage extends StatelessWidget {
   final Widget child;
   final bool bottomPadding;
 
-  const SimplePage(
-      {super.key,
-      required this.title,
-      required this.child,
-      this.bottomPadding = false});
+  const SimplePage({super.key, required this.title, required this.child, this.bottomPadding = false});
 
   @override
   Widget build(BuildContext context) {
@@ -752,9 +699,7 @@ class SimplePage extends StatelessWidget {
                   onPressed: () => Navigator.of(context).maybePop(),
                   icon: const Icon(Icons.arrow_back_rounded),
                 ),
-                Text(title,
-                    style: const TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.w700)),
+                Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
               ],
             ),
             const SizedBox(height: 18),
@@ -771,11 +716,7 @@ class CalendarPicker extends StatelessWidget {
   final String? selectedHour;
   final ValueChanged<String> onHour;
 
-  const CalendarPicker(
-      {super.key,
-      required this.hours,
-      required this.selectedHour,
-      required this.onHour});
+  const CalendarPicker({super.key, required this.hours, required this.selectedHour, required this.onHour});
 
   @override
   Widget build(BuildContext context) {
@@ -796,8 +737,7 @@ class CalendarPicker extends StatelessWidget {
                 selected: active,
                 label: Text(hour),
                 selectedColor: BColors.green,
-                labelStyle:
-                    TextStyle(color: active ? Colors.white : BColors.black),
+                labelStyle: TextStyle(color: active ? Colors.white : BColors.black),
                 onSelected: (_) => onHour(hour),
               );
             }).toList(),
@@ -930,8 +870,7 @@ class _DateChoice extends StatelessWidget {
   final bool active;
   final VoidCallback onTap;
 
-  const _DateChoice(
-      {required this.date, required this.active, required this.onTap});
+  const _DateChoice({required this.date, required this.active, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -947,10 +886,7 @@ class _DateChoice extends StatelessWidget {
                 ? null
                 : Text(
                     date.caption,
-                    style: const TextStyle(
-                        color: BColors.orange,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700),
+                    style: const TextStyle(color: BColors.orange, fontSize: 11, fontWeight: FontWeight.w700),
                   ),
           ),
           const SizedBox(height: 4),
@@ -961,26 +897,19 @@ class _DateChoice extends StatelessWidget {
               decoration: BoxDecoration(
                 color: active ? BColors.green : Colors.white,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                    color: active ? BColors.green : BColors.border, width: 2),
+                border: Border.all(color: active ? BColors.green : BColors.border, width: 2),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     date.weekDay,
-                    style: TextStyle(
-                        color: active ? Colors.white : BColors.black,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700),
+                    style: TextStyle(color: active ? Colors.white : BColors.black, fontSize: 12, fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 7),
                   Text(
                     date.day,
-                    style: TextStyle(
-                        color: active ? Colors.white : BColors.black,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700),
+                    style: TextStyle(color: active ? Colors.white : BColors.black, fontSize: 20, fontWeight: FontWeight.w700),
                   ),
                 ],
               ),
@@ -997,8 +926,7 @@ class _HourChoice extends StatelessWidget {
   final bool active;
   final VoidCallback onTap;
 
-  const _HourChoice(
-      {required this.hour, required this.active, required this.onTap});
+  const _HourChoice({required this.hour, required this.active, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -1012,15 +940,11 @@ class _HourChoice extends StatelessWidget {
         decoration: BoxDecoration(
           color: active ? BColors.green : Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-              color: active ? BColors.green : BColors.border, width: 2),
+          border: Border.all(color: active ? BColors.green : BColors.border, width: 2),
         ),
         child: Text(
           hour,
-          style: TextStyle(
-              color: active ? Colors.white : BColors.black,
-              fontSize: 16,
-              fontWeight: FontWeight.w600),
+          style: TextStyle(color: active ? Colors.white : BColors.black, fontSize: 16, fontWeight: FontWeight.w600),
         ),
       ),
     );
@@ -1032,11 +956,7 @@ class ServiceOption extends StatelessWidget {
   final bool selected;
   final VoidCallback onTap;
 
-  const ServiceOption(
-      {super.key,
-      required this.service,
-      required this.selected,
-      required this.onTap});
+  const ServiceOption({super.key, required this.service, required this.selected, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -1047,8 +967,7 @@ class ServiceOption extends StatelessWidget {
         decoration: BoxDecoration(
           color: selected ? BColors.green : Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-              color: selected ? BColors.green : BColors.border, width: 2),
+          border: Border.all(color: selected ? BColors.green : BColors.border, width: 2),
         ),
         child: Row(
           children: [
@@ -1081,12 +1000,7 @@ class StatPill extends StatelessWidget {
   final String value;
   final String label;
 
-  const StatPill(
-      {super.key,
-      required this.icon,
-      required this.iconColor,
-      required this.value,
-      required this.label});
+  const StatPill({super.key, required this.icon, required this.iconColor, required this.value, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -1102,11 +1016,8 @@ class StatPill extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(value,
-                style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-            Text(label,
-                style: const TextStyle(color: BColors.gray, fontSize: 12)),
+            Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+            Text(label, style: const TextStyle(color: BColors.gray, fontSize: 12)),
           ],
         ),
       ],
@@ -1130,19 +1041,15 @@ class ReviewCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Expanded(
-                  child: Text(review.name,
-                      style: const TextStyle(fontWeight: FontWeight.w700))),
+              Expanded(child: Text(review.name, style: const TextStyle(fontWeight: FontWeight.w700))),
               ...List.generate(
                 review.rating,
-                (_) => const Icon(Icons.star_rounded,
-                    color: BColors.orange, size: 16),
+                (_) => const Icon(Icons.star_rounded, color: BColors.orange, size: 16),
               ),
             ],
           ),
           const SizedBox(height: 8),
-          Text(review.date,
-              style: const TextStyle(color: BColors.gray, fontSize: 12)),
+          Text(review.date, style: const TextStyle(color: BColors.gray, fontSize: 12)),
           const SizedBox(height: 8),
           Text(review.comment, style: const TextStyle(height: 1.45)),
         ],
@@ -1169,14 +1076,11 @@ class EmptyPanel extends StatelessWidget {
             Container(
               width: 80,
               height: 80,
-              decoration: const BoxDecoration(
-                  color: BColors.border, shape: BoxShape.circle),
+              decoration: const BoxDecoration(color: BColors.border, shape: BoxShape.circle),
               child: Icon(icon, size: 38, color: BColors.gray),
             ),
             const SizedBox(height: 16),
-            Text(text,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: BColors.gray)),
+            Text(text, textAlign: TextAlign.center, style: const TextStyle(color: BColors.gray)),
           ],
         ),
       ),
@@ -1206,14 +1110,11 @@ class _ProfileStat extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 76,
-      decoration: BoxDecoration(
-          color: Colors.white, borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(value,
-              style:
-                  const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
+          Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
           Text(label, style: const TextStyle(fontSize: 12)),
         ],
@@ -1224,10 +1125,8 @@ class _ProfileStat extends StatelessWidget {
 
 class _HistoryCard extends StatelessWidget {
   final ServiceHistoryItem item;
-  final UserServiceReview? review;
-  final VoidCallback? onReview;
 
-  const _HistoryCard({required this.item, this.review, this.onReview});
+  const _HistoryCard({required this.item});
 
   @override
   Widget build(BuildContext context) {
@@ -1245,46 +1144,20 @@ class _HistoryCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(service.name,
-                    style: const TextStyle(
-                        fontSize: 15, fontWeight: FontWeight.w700),
-                    overflow: TextOverflow.ellipsis),
+                Text(service.name, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700), overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 3),
-                Text('${provider.name} • ${provider.category}',
-                    style: const TextStyle(color: BColors.gray, fontSize: 12)),
+                Text('${provider.name} • ${provider.category}', style: const TextStyle(color: BColors.gray, fontSize: 12)),
                 const SizedBox(height: 8),
-                Text(item.date,
-                    style: const TextStyle(color: BColors.gray, fontSize: 12)),
+                Text(item.date, style: const TextStyle(color: BColors.gray, fontSize: 12)),
               ],
             ),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text('R\$ ${service.price}',
-                  style: const TextStyle(
-                      color: BColors.green, fontWeight: FontWeight.w700)),
+              Text('R\$ ${service.price}', style: const TextStyle(color: BColors.green, fontWeight: FontWeight.w700)),
               const SizedBox(height: 28),
-              if (review == null)
-                GestureDetector(
-                  onTap: onReview,
-                  child: const Text('☆ Avaliar',
-                      style: TextStyle(color: BColors.orange, fontSize: 12)),
-                )
-              else
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.star_rounded,
-                        color: BColors.orange, size: 14),
-                    const SizedBox(width: 3),
-                    Text('${review!.rating}',
-                        style: const TextStyle(
-                            color: BColors.orange,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700)),
-                  ],
-                ),
+              const Text('☆ Avaliar', style: TextStyle(color: BColors.orange, fontSize: 12)),
             ],
           ),
         ],
@@ -1297,10 +1170,8 @@ class _SettingsRow extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback? onTap;
-  final Widget? trailing;
 
-  const _SettingsRow(
-      {required this.icon, required this.label, this.onTap, this.trailing});
+  const _SettingsRow({required this.icon, required this.label, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -1316,14 +1187,7 @@ class _SettingsRow extends StatelessWidget {
               child: Icon(icon, color: BColors.green),
             ),
             const SizedBox(width: 16),
-            Expanded(
-                child: Text(label,
-                    style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.w700))),
-            if (trailing != null) ...[
-              trailing!,
-              const SizedBox(width: 8),
-            ],
+            Expanded(child: Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700))),
             const Icon(Icons.chevron_right_rounded, color: BColors.gray),
           ],
         ),
@@ -1384,10 +1248,7 @@ class AddressTile extends StatelessWidget {
                   const SizedBox(height: 6),
                   Text(
                     subtitle,
-                    style: TextStyle(
-                        color: selected ? Colors.white70 : BColors.gray,
-                        fontSize: 14,
-                        height: 1.35),
+                    style: TextStyle(color: selected ? Colors.white70 : BColors.gray, fontSize: 14, height: 1.35),
                   ),
                 ],
               ),
@@ -1412,8 +1273,7 @@ class _AuthFooter extends StatelessWidget {
   final String action;
   final VoidCallback onTap;
 
-  const _AuthFooter(
-      {required this.text, required this.action, required this.onTap});
+  const _AuthFooter({required this.text, required this.action, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -1421,14 +1281,12 @@ class _AuthFooter extends StatelessWidget {
       alignment: WrapAlignment.center,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        Text('$text ',
-            style: const TextStyle(color: BColors.gray, fontFamily: 'Georgia')),
+        Text('$text ', style: const TextStyle(color: BColors.gray, fontFamily: 'Georgia')),
         TextButton(
           onPressed: onTap,
           child: Text(
             action,
-            style:
-                const TextStyle(color: BColors.orange, fontFamily: 'Georgia'),
+            style: const TextStyle(color: BColors.orange, fontFamily: 'Georgia'),
           ),
         ),
       ],
@@ -1441,8 +1299,7 @@ class CircleButton extends StatelessWidget {
   final VoidCallback onTap;
   final bool white;
 
-  const CircleButton(
-      {super.key, required this.icon, required this.onTap, this.white = false});
+  const CircleButton({super.key, required this.icon, required this.onTap, this.white = false});
 
   @override
   Widget build(BuildContext context) {
@@ -1454,9 +1311,7 @@ class CircleButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: white ? Colors.white : BColors.paper,
           shape: BoxShape.circle,
-          boxShadow: const [
-            BoxShadow(color: Color(0x22000000), blurRadius: 10)
-          ],
+          boxShadow: const [BoxShadow(color: Color(0x22000000), blurRadius: 10)],
         ),
         child: Icon(icon, color: BColors.black),
       ),
@@ -1500,10 +1355,7 @@ class _LogoText extends StatelessWidget {
           fontFamily: 'Georgia',
           fontSize: size,
           fontWeight: FontWeight.w700,
-          shadows: const [
-            Shadow(
-                color: Color(0x55000000), blurRadius: 20, offset: Offset(0, 4))
-          ],
+          shadows: const [Shadow(color: Color(0x55000000), blurRadius: 20, offset: Offset(0, 4))],
         ),
         children: [
           const TextSpan(text: 'Busca'),
@@ -1525,8 +1377,7 @@ class _LogoIcon extends StatelessWidget {
     return SizedBox(
       width: size,
       height: size,
-      child: Image.asset('assets/images/buscai_icon_verde.png',
-          fit: BoxFit.contain),
+      child: Image.asset('assets/images/buscai_icon_verde.png', fit: BoxFit.contain),
     );
   }
 }
@@ -1544,8 +1395,7 @@ class _LoadingDots extends StatelessWidget {
           width: 8,
           height: 8,
           margin: const EdgeInsets.symmetric(horizontal: 4),
-          decoration: const BoxDecoration(
-              color: BColors.orange, shape: BoxShape.circle),
+          decoration: const BoxDecoration(color: BColors.orange, shape: BoxShape.circle),
         ),
       ),
     );
@@ -1590,7 +1440,6 @@ BoxDecoration cardDecoration({required double radius}) {
 
 void openProvider(BuildContext context, Provider provider) {
   Navigator.of(context).push(
-    MaterialPageRoute(
-        builder: (_) => ProviderProfileScreen(provider: provider)),
+    MaterialPageRoute(builder: (_) => ProviderProfileScreen(provider: provider)),
   );
 }
