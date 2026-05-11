@@ -9,7 +9,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ReviewsService } from './reviews.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -25,6 +25,10 @@ export class ReviewsController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Criar avaliação para um post' })
+  @ApiResponse({ status: 201, description: 'Avaliação criada com sucesso' })
+  @ApiResponse({ status: 400, description: 'Dados inválidos ou já avaliou este post' })
+  @ApiResponse({ status: 401, description: 'Token ausente ou inválido' })
+  @ApiResponse({ status: 403, description: 'Sem permissão para avaliar este post' })
   create(
     @Request() req: AuthenticatedRequest,
     @BearerToken() token: string,
@@ -37,6 +41,7 @@ export class ReviewsController {
   @ApiOperation({ summary: 'Listar avaliações de um post' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiResponse({ status: 200, description: 'Lista de avaliações do post' })
   findByPost(
     @Param('postId') postId: string,
     @Query('page') page = 1,
@@ -49,6 +54,10 @@ export class ReviewsController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Remover avaliação' })
+  @ApiResponse({ status: 200, description: 'Avaliação removida com sucesso' })
+  @ApiResponse({ status: 401, description: 'Token ausente ou inválido' })
+  @ApiResponse({ status: 403, description: 'Sem permissão para remover esta avaliação' })
+  @ApiResponse({ status: 404, description: 'Avaliação não encontrada' })
   delete(@Param('id') id: string, @BearerToken() token: string) {
     return this.reviewsService.delete(id, token);
   }

@@ -8,19 +8,14 @@ import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-<<<<<<< HEAD
   app.use(helmet());
   app.useGlobalFilters(new GlobalExceptionFilter());
 
   const isProduction = process.env.NODE_ENV === 'production';
-=======
-  
->>>>>>> origin/develop
   const rawOrigins = process.env.ALLOWED_ORIGINS;
   const allowedOrigins: string[] = rawOrigins
     ? rawOrigins.split(',').map((o) => o.trim()).filter(Boolean)
     : [];
-<<<<<<< HEAD
 
   if (isProduction && allowedOrigins.length === 0) {
     throw new Error('ALLOWED_ORIGINS must be set in production');
@@ -36,25 +31,6 @@ async function bootstrap() {
           }
         }
       : true,
-    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
-  });
-
-=======
->>>>>>> origin/develop
-
-  app.enableCors({
-    origin: allowedOrigins.length > 0
-      ? (origin, callback) => {
-         
-          if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-          } else {
-            callback(new Error(`Origin '${origin}' não permitida pelo CORS`));
-          }
-        }
-      : true, 
     methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,

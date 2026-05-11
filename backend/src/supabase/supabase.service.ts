@@ -12,21 +12,14 @@ export class SupabaseService {
   private readonly supabaseAnonKey: string;
 
   constructor(private config: ConfigService) {
-<<<<<<< HEAD
     this.supabaseUrl     = this.config.getOrThrow('SUPABASE_URL');
     this.supabaseAnonKey = this.config.getOrThrow('SUPABASE_ANON_KEY');
-    this.client = createClient(this.supabaseUrl, this.supabaseAnonKey);
-=======
+
     const options = {
       realtime: { transport: ws as any },
     };
 
-    this.client = createClient(
-      this.config.getOrThrow('SUPABASE_URL'),
-      this.config.getOrThrow('SUPABASE_ANON_KEY'),
-      options,
-    );
->>>>>>> origin/develop
+    this.client = createClient(this.supabaseUrl, this.supabaseAnonKey, options);
 
     this.adminClient = createClient(
       this.supabaseUrl,

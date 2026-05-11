@@ -1443,7 +1443,6 @@ void openProvider(BuildContext context, Provider provider) {
     MaterialPageRoute(builder: (_) => ProviderProfileScreen(provider: provider)),
   );
 }
-<<<<<<< HEAD
 
 // ─── Shared loading indicator ─────────────────────────────────────────────────
 
@@ -1608,5 +1607,3 @@ class ForgotPasswordPage extends StatelessWidget {
     );
   }
 }
-=======
->>>>>>> origin/develop

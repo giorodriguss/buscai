@@ -1,6 +1,5 @@
 part of '../figma_flow.dart';
 
-<<<<<<< HEAD
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
@@ -9,16 +8,6 @@ class SplashScreen extends ConsumerStatefulWidget {
 }
 
 class _SplashScreenState extends ConsumerState<SplashScreen>
-=======
-class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
-
-  @override
-  State<SplashScreen> createState() => _SplashScreenState();
-}
-
-class _SplashScreenState extends State<SplashScreen>
->>>>>>> origin/develop
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
 
@@ -42,11 +31,7 @@ class _SplashScreenState extends State<SplashScreen>
     try {
       final data = await AuthApiService.instance.me();
       final user = AppUser.fromApi(data);
-<<<<<<< HEAD
       ref.read(sessionProvider.notifier).setUser(user);
-=======
-      AppSession.currentUser = user;
->>>>>>> origin/develop
       _navigate(MainShell(user: user));
     } catch (_) {
       await AuthApiService.instance.logout();

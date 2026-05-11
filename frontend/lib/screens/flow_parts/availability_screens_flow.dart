@@ -1,69 +1,34 @@
 part of '../figma_flow.dart';
 
-<<<<<<< HEAD
 class AvailabilityDaysScreen extends ConsumerWidget {
   const AvailabilityDaysScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     const days = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
-=======
-class AvailabilityDaysScreen extends StatefulWidget {
-  const AvailabilityDaysScreen({super.key});
-
-  @override
-  State<AvailabilityDaysScreen> createState() => _AvailabilityDaysScreenState();
-}
-
-class _AvailabilityDaysScreenState extends State<AvailabilityDaysScreen> {
-  final days = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
-
-  @override
-  Widget build(BuildContext context) {
->>>>>>> origin/develop
     return _AvailabilityPicker(
       title: 'Dias Disponíveis',
       subtitle: 'Selecione os dias da semana em que você está disponível',
       values: days,
-<<<<<<< HEAD
       initialSelected: ref.read(collaboratorProvider).days,
       button: 'Salvar dias',
       onSave: (selected) => ref.read(collaboratorProvider.notifier).setDays(selected),
-=======
-      selected: CollaboratorState.days,
-      button: 'Salvar dias',
->>>>>>> origin/develop
     );
   }
 }
 
-<<<<<<< HEAD
 class AvailabilityHoursScreen extends ConsumerWidget {
   const AvailabilityHoursScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-=======
-// Edicao local dos horarios de atendimento. O clique alterna selecionado/nao
-// selecionado para permitir desmarcar horarios.
-class AvailabilityHoursScreen extends StatelessWidget {
-  const AvailabilityHoursScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
->>>>>>> origin/develop
     return _AvailabilityPicker(
       title: 'Horários Disponíveis',
       subtitle: 'Selecione os horários em que você está disponível para atender',
       values: serviceHours,
-<<<<<<< HEAD
       initialSelected: ref.read(collaboratorProvider).hours,
       button: 'Salvar horários',
       onSave: (selected) => ref.read(collaboratorProvider.notifier).setHours(selected),
-=======
-      selected: CollaboratorState.hours,
-      button: 'Salvar horários',
->>>>>>> origin/develop
       grid: true,
     );
   }
@@ -73,31 +38,19 @@ class _AvailabilityPicker extends StatefulWidget {
   final String title;
   final String subtitle;
   final List<String> values;
-<<<<<<< HEAD
   final Set<String> initialSelected;
   final String button;
   final bool grid;
   final void Function(Set<String>)? onSave;
-=======
-  final Set<String> selected;
-  final String button;
-  final bool grid;
->>>>>>> origin/develop
 
   const _AvailabilityPicker({
     required this.title,
     required this.subtitle,
     required this.values,
-<<<<<<< HEAD
     required this.initialSelected,
     required this.button,
     this.grid = false,
     this.onSave,
-=======
-    required this.selected,
-    required this.button,
-    this.grid = false,
->>>>>>> origin/develop
   });
 
   @override
@@ -105,7 +58,6 @@ class _AvailabilityPicker extends StatefulWidget {
 }
 
 class _AvailabilityPickerState extends State<_AvailabilityPicker> {
-<<<<<<< HEAD
   late Set<String> _localSelected;
 
   @override
@@ -114,8 +66,7 @@ class _AvailabilityPickerState extends State<_AvailabilityPicker> {
     _localSelected = {...widget.initialSelected};
   }
 
-=======
->>>>>>> origin/develop
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -133,7 +84,6 @@ class _AvailabilityPickerState extends State<_AvailabilityPicker> {
               runSpacing: 10,
               children: widget.values.map((value) => _AvailabilityOption(
                     value: value,
-<<<<<<< HEAD
                     active: _localSelected.contains(value),
                     width: 104,
                     centered: true,
@@ -141,13 +91,6 @@ class _AvailabilityPickerState extends State<_AvailabilityPicker> {
                       _localSelected.contains(value)
                           ? _localSelected.remove(value)
                           : _localSelected.add(value);
-=======
-                    active: widget.selected.contains(value),
-                    width: 104,
-                    centered: true,
-                    onTap: () => setState(() {
-                      widget.selected.contains(value) ? widget.selected.remove(value) : widget.selected.add(value);
->>>>>>> origin/develop
                     }),
                   )).toList(),
             )
@@ -157,25 +100,17 @@ class _AvailabilityPickerState extends State<_AvailabilityPicker> {
                     padding: const EdgeInsets.only(bottom: 10),
                     child: _AvailabilityOption(
                       value: value,
-<<<<<<< HEAD
                       active: _localSelected.contains(value),
                       width: double.infinity,
                       onTap: () => setState(() {
                         _localSelected.contains(value)
                             ? _localSelected.remove(value)
                             : _localSelected.add(value);
-=======
-                      active: widget.selected.contains(value),
-                      width: double.infinity,
-                      onTap: () => setState(() {
-                        widget.selected.contains(value) ? widget.selected.remove(value) : widget.selected.add(value);
->>>>>>> origin/develop
                       }),
                     ),
                   )).toList(),
             ),
           const SizedBox(height: 28),
-<<<<<<< HEAD
           PrimaryButton(
             label: widget.button,
             onPressed: () {
@@ -183,9 +118,6 @@ class _AvailabilityPickerState extends State<_AvailabilityPicker> {
               Navigator.of(context).pop();
             },
           ),
-=======
-          PrimaryButton(label: widget.button, onPressed: () => Navigator.of(context).pop()),
->>>>>>> origin/develop
         ],
       ),
     );
@@ -228,9 +160,3 @@ class _AvailabilityOption extends StatelessWidget {
     );
   }
 }
-<<<<<<< HEAD
-=======
-
-// Gerenciador de portfolio fake: adiciona/remove URLs de exemplo em memoria.
-// Futuro backend: trocar por upload real de imagem e lista vinda da API.
->>>>>>> origin/develop

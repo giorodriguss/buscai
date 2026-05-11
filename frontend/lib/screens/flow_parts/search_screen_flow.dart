@@ -27,20 +27,6 @@ class _SearchScreenState extends State<SearchScreen> {
     ('Educação', Icons.school_rounded, BColors.orange),
   ];
 
-<<<<<<< HEAD
-=======
-  List<String> mapCategory(String category) {
-    return switch (category) {
-      'Manutenção' => ['Encanador', 'Eletricista', 'Pintor', 'Marceneiro'],
-      'Estética' => ['Manicure', 'Cabeleireira'],
-      'Automotivo' => ['Mecânico'],
-      'Limpeza' => ['Diarista'],
-      'Casa' => ['Encanador', 'Eletricista', 'Pintor', 'Marceneiro'],
-      _ => [],
-    };
-  }
-
->>>>>>> origin/develop
   List<Provider> get results {
     var providers = [...mockProviders];
     if (query.isNotEmpty) {
@@ -50,11 +36,7 @@ class _SearchScreenState extends State<SearchScreen> {
           .toList();
     }
     if (selectedCategory != null) {
-<<<<<<< HEAD
       final allowed = ProviderFilter.categoriesFor(selectedCategory!);
-=======
-      final allowed = mapCategory(selectedCategory!);
->>>>>>> origin/develop
       providers = providers.where((p) => allowed.contains(p.category)).toList();
     }
     return providers;
@@ -162,9 +144,3 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 }
-<<<<<<< HEAD
-=======
-
-// Detalhe do prestador visto pelo usuario. Aqui ficam favorito, escolha de
-// servico, data/horario e criacao do historico local de agendamento.
->>>>>>> origin/develop

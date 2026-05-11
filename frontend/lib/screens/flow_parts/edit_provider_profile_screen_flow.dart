@@ -1,26 +1,15 @@
 part of '../figma_flow.dart';
 
-<<<<<<< HEAD
 class EditProviderProfileScreen extends ConsumerStatefulWidget {
-=======
-class EditProviderProfileScreen extends StatefulWidget {
->>>>>>> origin/develop
   final AppUser user;
 
   const EditProviderProfileScreen({super.key, required this.user});
 
   @override
-<<<<<<< HEAD
   ConsumerState<EditProviderProfileScreen> createState() => _EditProviderProfileScreenState();
 }
 
 class _EditProviderProfileScreenState extends ConsumerState<EditProviderProfileScreen> {
-=======
-  State<EditProviderProfileScreen> createState() => _EditProviderProfileScreenState();
-}
-
-class _EditProviderProfileScreenState extends State<EditProviderProfileScreen> {
->>>>>>> origin/develop
   late final TextEditingController nameController;
   late final TextEditingController phoneController;
   late final TextEditingController aboutController;
@@ -30,11 +19,7 @@ class _EditProviderProfileScreenState extends State<EditProviderProfileScreen> {
     super.initState();
     nameController = TextEditingController(text: widget.user.name);
     phoneController = TextEditingController(text: widget.user.phone);
-<<<<<<< HEAD
     aboutController = TextEditingController(text: ref.read(collaboratorProvider).about);
-=======
-    aboutController = TextEditingController(text: CollaboratorState.about);
->>>>>>> origin/develop
   }
 
   @override
@@ -48,10 +33,7 @@ class _EditProviderProfileScreenState extends State<EditProviderProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final user = widget.user;
-<<<<<<< HEAD
     final collab = ref.watch(collaboratorProvider);
-=======
->>>>>>> origin/develop
     return Scaffold(
       backgroundColor: BColors.paper,
       appBar: const _GreenAppBar(title: 'Editar Perfil'),
@@ -61,7 +43,6 @@ class _EditProviderProfileScreenState extends State<EditProviderProfileScreen> {
           const Text('Foto de capa', style: TextStyle(fontWeight: FontWeight.w700)),
           const SizedBox(height: 10),
           GestureDetector(
-<<<<<<< HEAD
             onTap: () {
               ref.read(collaboratorProvider.notifier).setCoverImage(
                 collab.coverImage.contains('1581092160562')
@@ -69,22 +50,11 @@ class _EditProviderProfileScreenState extends State<EditProviderProfileScreen> {
                     : 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=900',
               );
             },
-=======
-            onTap: () => setState(() {
-              CollaboratorState.coverImage = CollaboratorState.coverImage.contains('1581092160562')
-                  ? 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=900'
-                  : 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=900';
-            }),
->>>>>>> origin/develop
             child: Stack(
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(14),
-<<<<<<< HEAD
                   child: Image.network(collab.coverImage, height: 126, width: double.infinity, fit: BoxFit.cover),
-=======
-                  child: Image.network(CollaboratorState.coverImage, height: 126, width: double.infinity, fit: BoxFit.cover),
->>>>>>> origin/develop
                 ),
                 const Positioned(right: 12, bottom: 12, child: CircleAvatar(backgroundColor: BColors.orange, child: Icon(Icons.camera_alt_outlined, color: Colors.white))),
               ],
@@ -96,25 +66,14 @@ class _EditProviderProfileScreenState extends State<EditProviderProfileScreen> {
           Center(
             child: Stack(
               children: [
-<<<<<<< HEAD
                 CircleAvatar(radius: 44, backgroundColor: collab.profileColor, child: Text(user.name[0].toUpperCase(), style: const TextStyle(color: Colors.white, fontSize: 32))),
-=======
-                CircleAvatar(radius: 44, backgroundColor: CollaboratorState.profileColor, child: Text(user.name[0].toUpperCase(), style: const TextStyle(color: Colors.white, fontSize: 32))),
->>>>>>> origin/develop
                 Positioned(
                   right: 0,
                   bottom: 0,
                   child: GestureDetector(
-<<<<<<< HEAD
                     onTap: () => ref.read(collaboratorProvider.notifier).setProfileColor(
                       collab.profileColor == BColors.green ? BColors.orange : BColors.green,
                     ),
-=======
-                    onTap: () => setState(() {
-                      CollaboratorState.profileColor =
-                          CollaboratorState.profileColor == BColors.green ? BColors.orange : BColors.green;
-                    }),
->>>>>>> origin/develop
                     child: Container(
                       width: 32,
                       height: 32,
@@ -144,11 +103,7 @@ class _EditProviderProfileScreenState extends State<EditProviderProfileScreen> {
             onPressed: () {
               user.name = nameController.text.trim().isEmpty ? user.name : nameController.text.trim();
               user.phone = phoneController.text.trim();
-<<<<<<< HEAD
               ref.read(collaboratorProvider.notifier).setAbout(aboutController.text.trim());
-=======
-              CollaboratorState.about = aboutController.text.trim();
->>>>>>> origin/develop
               Navigator.of(context).pop();
             },
           ),
@@ -157,9 +112,3 @@ class _EditProviderProfileScreenState extends State<EditProviderProfileScreen> {
     );
   }
 }
-<<<<<<< HEAD
-=======
-
-// Edicao local dos dias de atendimento do colaborador.
-// Futuro backend: salvar esse conjunto no perfil profissional.
->>>>>>> origin/develop

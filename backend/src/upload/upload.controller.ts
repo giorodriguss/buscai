@@ -10,7 +10,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { UploadService } from './upload.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AuthenticatedRequest } from '../common/interfaces/authenticated-request.interface';
@@ -26,6 +26,9 @@ export class UploadController {
   @Post('avatar')
   @ApiOperation({ summary: 'Upload de foto de perfil' })
   @ApiConsumes('multipart/form-data')
+  @ApiResponse({ status: 201, description: 'Avatar atualizado com sucesso' })
+  @ApiResponse({ status: 400, description: 'Arquivo inválido ou ausente' })
+  @ApiResponse({ status: 401, description: 'Token ausente ou inválido' })
   @UseInterceptors(FileInterceptor('file'))
   uploadAvatar(
     @Request() req: AuthenticatedRequest,
@@ -38,6 +41,11 @@ export class UploadController {
   @Post('posts/:postId/photos')
   @ApiOperation({ summary: 'Upload de foto para um post (máx conforme plano)' })
   @ApiConsumes('multipart/form-data')
+  @ApiResponse({ status: 201, description: 'Foto adicionada ao post' })
+  @ApiResponse({ status: 400, description: 'Arquivo inválido ou limite do plano atingido' })
+  @ApiResponse({ status: 401, description: 'Token ausente ou inválido' })
+  @ApiResponse({ status: 403, description: 'Sem permissão para editar este post' })
+  @ApiResponse({ status: 404, description: 'Post não encontrado' })
   @UseInterceptors(FileInterceptor('file'))
   uploadPostPhoto(
     @Request() req: AuthenticatedRequest,
@@ -50,6 +58,10 @@ export class UploadController {
 
   @Delete('photos/:photoId')
   @ApiOperation({ summary: 'Remover foto de um post' })
+  @ApiResponse({ status: 200, description: 'Foto removida com sucesso' })
+  @ApiResponse({ status: 401, description: 'Token ausente ou inválido' })
+  @ApiResponse({ status: 403, description: 'Sem permissão para remover esta foto' })
+  @ApiResponse({ status: 404, description: 'Foto não encontrada' })
   deletePostPhoto(@Param('photoId') photoId: string, @BearerToken() token: string) {
     return this.uploadService.deletePostPhoto(photoId, token);
   }
@@ -57,6 +69,9 @@ export class UploadController {
   @Post('portfolio')
   @ApiOperation({ summary: 'Upload de imagem para portfólio do prestador' })
   @ApiConsumes('multipart/form-data')
+  @ApiResponse({ status: 201, description: 'Imagem adicionada ao portfólio' })
+  @ApiResponse({ status: 400, description: 'Arquivo inválido ou ausente' })
+  @ApiResponse({ status: 401, description: 'Token ausente ou inválido' })
   @UseInterceptors(FileInterceptor('file'))
   uploadPortfolio(
     @Request() req: AuthenticatedRequest,
@@ -67,6 +82,10 @@ export class UploadController {
 
   @Delete('portfolio/:imageId')
   @ApiOperation({ summary: 'Remover imagem do portfólio' })
+  @ApiResponse({ status: 200, description: 'Imagem removida do portfólio' })
+  @ApiResponse({ status: 401, description: 'Token ausente ou inválido' })
+  @ApiResponse({ status: 403, description: 'Sem permissão para remover esta imagem' })
+  @ApiResponse({ status: 404, description: 'Imagem não encontrada' })
   deletePortfolio(@Param('imageId') imageId: string, @Request() req: AuthenticatedRequest) {
     return this.uploadService.deletePortfolioImage(imageId, req.user.id);
   }

@@ -1,6 +1,6 @@
 import { CacheInterceptor } from '@nestjs/cache-manager';
 import { Controller, Get, UseInterceptors } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CategoriesService } from './categories.service';
 
 @ApiTags('Categories')
@@ -11,6 +11,7 @@ export class CategoriesController {
 
   @Get()
   @ApiOperation({ summary: 'Listar todas as categorias' })
+  @ApiResponse({ status: 200, description: 'Lista de categorias' })
   findAll() {
     return this.categoriesService.findAll();
   }

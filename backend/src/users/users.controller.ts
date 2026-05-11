@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, Patch, Request, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -15,6 +15,8 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Perfil do usuário autenticado' })
+  @ApiResponse({ status: 200, description: 'Dados do usuário autenticado' })
+  @ApiResponse({ status: 401, description: 'Token ausente ou inválido' })
   getMe(@Request() req: AuthenticatedRequest) {
     return this.usersService.findOne(req.user.id);
   }
@@ -23,6 +25,9 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Atualizar nome e bairro do usuário' })
+  @ApiResponse({ status: 200, description: 'Dados do usuário atualizados' })
+  @ApiResponse({ status: 400, description: 'Dados inválidos' })
+  @ApiResponse({ status: 401, description: 'Token ausente ou inválido' })
   updateMe(
     @Request() req: AuthenticatedRequest,
     @BearerToken() token: string,
@@ -33,6 +38,8 @@ export class UsersController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Perfil público de qualquer usuário' })
+  @ApiResponse({ status: 200, description: 'Dados públicos do usuário' })
+  @ApiResponse({ status: 404, description: 'Usuário não encontrado' })
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
   }

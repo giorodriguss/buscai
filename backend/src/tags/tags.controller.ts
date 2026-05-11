@@ -1,6 +1,6 @@
 import { CacheInterceptor } from '@nestjs/cache-manager';
 import { Controller, Get, UseInterceptors } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { TagsService } from './tags.service';
 
 @ApiTags('Tags')
@@ -11,6 +11,7 @@ export class TagsController {
 
   @Get()
   @ApiOperation({ summary: 'Listar todas as tags' })
+  @ApiResponse({ status: 200, description: 'Lista de tags' })
   findAll() {
     return this.tagsService.findAll();
   }
