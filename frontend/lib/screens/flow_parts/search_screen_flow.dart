@@ -119,7 +119,7 @@ class _SearchScreenState extends State<SearchScreen> {
                               width: 44,
                               height: 44,
                               decoration: BoxDecoration(
-                                color: category.$3.withValues(alpha: .08),
+                                color: category.$3.withOpacity(.08),
                                 borderRadius: BorderRadius.circular(14),
                               ),
                               child: Icon(category.$2, color: category.$3, size: 23),

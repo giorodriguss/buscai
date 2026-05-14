@@ -8,10 +8,12 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final session = ref.watch(sessionProvider);
+    final activeUser = session.currentUser ?? user;
     final favoriteProviders = mockProviders
         .where((provider) => session.favoriteProviderIds.contains(provider.id))
         .toList();
     final history = session.history;
+    final reviews = session.userReviews;
     return ListView(
       padding: const EdgeInsets.only(bottom: 112),
       children: [
@@ -22,41 +24,43 @@ class ProfileScreen extends ConsumerWidget {
             children: [
               Row(
                 children: [
-                  CircleAvatar(
-                    radius: 40,
-                    backgroundColor: BColors.paper,
-                    child: Text(
-                      user.name.trim().isEmpty ? '?' : user.name.trim()[0].toUpperCase(),
-                      style: const TextStyle(color: BColors.green, fontSize: 30, fontWeight: FontWeight.w700),
-                    ),
-                  ),
+                  _UserAvatar(user: activeUser, radius: 40),
                   const SizedBox(width: 18),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(user.name, style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w700)),
+                        Text(activeUser.name, style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w700)),
                         const SizedBox(height: 4),
-                        Text(user.email, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                        Text(activeUser.email, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                        if (activeUser.neighborhood.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(activeUser.neighborhood, style: const TextStyle(color: Color(0xCCFFFFFF))),
+                        ],
                       ],
                     ),
                   ),
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: const BoxDecoration(color: BColors.orange, shape: BoxShape.circle),
-                    child: const Icon(Icons.settings_outlined, color: Colors.white),
+                  GestureDetector(
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => EditUserProfileScreen(user: activeUser)),
+                    ),
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: const BoxDecoration(color: BColors.orange, shape: BoxShape.circle),
+                      child: const Icon(Icons.settings_outlined, color: Colors.white),
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 24),
               Row(
                 children: [
-                  Expanded(child: _ProfileStat(value: '${history.length}', label: 'Serviços')),
+                  Expanded(child: _ProfileStat(value: '${history.length}', label: 'Servicos')),
                   const SizedBox(width: 12),
                   Expanded(child: _ProfileStat(value: '${favoriteProviders.length}', label: 'Favoritos')),
                   const SizedBox(width: 12),
-                  const Expanded(child: _ProfileStat(value: '0', label: 'Avaliações')),
+                  Expanded(child: _ProfileStat(value: '${reviews.length}', label: 'Avaliacoes')),
                 ],
               ),
             ],
@@ -102,35 +106,84 @@ class ProfileScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 26),
-              const SectionTitle('Histórico recente', size: 20),
+              const SectionTitle('Historico recente', size: 20),
               const SizedBox(height: 12),
               if (history.isEmpty)
                 const EmptyPanel(
                   icon: Icons.history_rounded,
-                  text: 'Seu histórico aparecerá depois de agendar um serviço.',
+                  text: 'Seu historico aparecera depois de agendar um servico.',
                 )
               else
-                ...history.map((item) => _HistoryCard(item: item)),
+                ...history.map(
+                  (item) => _HistoryCard(
+                    item: item,
+                    onRate: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => RateServiceScreen(item: item)),
+                    ),
+                  ),
+                ),
               const SizedBox(height: 20),
-              const SectionTitle('Configurações', size: 20),
+              const SectionTitle('Configuracoes', size: 20),
               const SizedBox(height: 12),
               Container(
                 decoration: cardDecoration(radius: 14),
                 child: Column(
                   children: [
                     _SettingsRow(
+                      icon: Icons.person_outline_rounded,
+                      label: 'Editar perfil',
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => EditUserProfileScreen(user: activeUser)),
+                      ),
+                    ),
+                    const Divider(height: 1),
+                    _SettingsRow(
                       icon: Icons.location_on_outlined,
-                      label: 'Endereços salvos',
+                      label: 'Enderecos salvos',
                       onTap: () => Navigator.of(context).push(
                         MaterialPageRoute(builder: (_) => const AddressSelectionScreen()),
                       ),
                     ),
                     const Divider(height: 1),
-                    const _SettingsRow(icon: Icons.notifications_none_rounded, label: 'Notificações'),
+                    _SettingsRow(
+                      icon: Icons.notifications_none_rounded,
+                      label: 'Notificacoes',
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const NotificationSettingsScreen()),
+                      ),
+                    ),
                     const Divider(height: 1),
-                    const _SettingsRow(icon: Icons.shield_outlined, label: 'Privacidade e Segurança'),
+                    _SettingsRow(
+                      icon: Icons.shield_outlined,
+                      label: 'Privacidade e seguranca',
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const PrivacySecurityScreen()),
+                      ),
+                    ),
                     const Divider(height: 1),
-                    const _SettingsRow(icon: Icons.help_outline_rounded, label: 'Ajuda e Suporte'),
+                    _SettingsRow(
+                      icon: Icons.lock_reset_rounded,
+                      label: 'Redefinir senha',
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const ResetPasswordScreen()),
+                      ),
+                    ),
+                    const Divider(height: 1),
+                    _SettingsRow(
+                      icon: Icons.star_border_rounded,
+                      label: 'Minhas avaliacoes',
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const UserReviewsHistoryScreen()),
+                      ),
+                    ),
+                    const Divider(height: 1),
+                    _SettingsRow(
+                      icon: Icons.help_outline_rounded,
+                      label: 'Ajuda e suporte',
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const HelpSupportScreen()),
+                      ),
+                    ),
                   ],
                 ),
               ),

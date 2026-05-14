@@ -10,7 +10,7 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> with AsyncLoadMixin {
+class _HomeScreenState extends ConsumerState<HomeScreen> with AsyncLoadMixin<HomeScreen> {
   String selectedCategory = 'Todos';
   String? selectedFilter;
   String query = '';
