@@ -29,6 +29,7 @@ part 'flow_parts/portfolio_manager_screen_flow.dart';
 part 'flow_parts/favorites_screen_flow.dart';
 part 'flow_parts/category_selection_screen_flow.dart';
 part 'flow_parts/address_screens_flow.dart';
+part 'flow_parts/user_settings_screens_flow.dart';
 part 'flow_parts/repositories_flow.dart';
 part 'flow_parts/shared_widgets_flow.dart';
 
@@ -64,6 +65,9 @@ class Service {
   const Service({required this.id, required this.name, required this.price});
 }
 
+Map<String, dynamic> _jsonMap(Object? value) =>
+    value is Map ? Map<String, dynamic>.from(value) : <String, dynamic>{};
+
 // Modelo simples de avaliacao usado nos perfis mockados de prestadores.
 class Review {
   final String name;
@@ -79,7 +83,7 @@ class Review {
   });
 
   factory Review.fromApi(Map<String, dynamic> json) {
-    final user = json['users'] as Map<String, dynamic>? ?? {};
+    final user = _jsonMap(json['users']);
     return Review(
       name: user['full_name'] as String? ?? 'Usuário',
       rating: (json['rating'] as num?)?.toInt() ?? 5,
@@ -110,6 +114,8 @@ class AppUser {
   String name;
   String email;
   String phone;
+  String photoUrl;
+  String neighborhood;
   bool isProvider;
 
   AppUser({
@@ -117,6 +123,8 @@ class AppUser {
     required this.name,
     required this.email,
     this.phone = '',
+    this.photoUrl = '',
+    this.neighborhood = '',
     this.isProvider = false,
   });
 
@@ -125,6 +133,8 @@ class AppUser {
         name: json['full_name'] as String? ?? '',
         email: json['email'] as String? ?? '',
         phone: json['phone'] as String? ?? '',
+        photoUrl: json['avatar_url'] as String? ?? '',
+        neighborhood: json['neighborhood'] as String? ?? '',
         isProvider: json['role'] == 'prestador',
       );
 }
@@ -142,6 +152,21 @@ class ServiceHistoryItem {
   });
 }
 
+class UserServiceReview {
+  final Provider provider;
+  final Service service;
+  final int rating;
+  final String comment;
+  final String date;
+
+  const UserServiceReview({
+    required this.provider,
+    required this.service,
+    required this.rating,
+    required this.comment,
+    required this.date,
+  });
+}
 
 // Validacoes iguais para cadastro comum e cadastro de prestador.
 // Hoje exigimos email terminando em .com porque foi a regra pedida no prototipo.
@@ -245,18 +270,18 @@ class Provider {
   });
 
   factory Provider.fromApi(Map<String, dynamic> json) {
-    final user = json['users'] as Map<String, dynamic>? ?? {};
-    final cat = json['categories'] as Map<String, dynamic>? ?? {};
+    final user = _jsonMap(json['users']);
+    final cat = _jsonMap(json['categories']);
     final imgs = json['post_photos'] as List? ?? [];
     final revs = json['reviews'] as List? ?? [];
 
     final portfolio = imgs
-        .map((img) => (img as Map<String, dynamic>)['storage_url'] as String? ?? '')
+        .map((img) => _jsonMap(img)['storage_url'] as String? ?? '')
         .where((u) => u.isNotEmpty)
         .toList();
 
     final reviews = revs
-        .map((r) => Review.fromApi(r as Map<String, dynamic>))
+        .map((r) => Review.fromApi(_jsonMap(r)))
         .toList();
 
     final priceFrom = (json['price_from'] as num?)?.toInt() ?? 0;

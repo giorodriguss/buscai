@@ -7,7 +7,7 @@ class FavoritesScreen extends StatefulWidget {
   State<FavoritesScreen> createState() => _FavoritesScreenState();
 }
 
-class _FavoritesScreenState extends State<FavoritesScreen> with AsyncLoadMixin {
+class _FavoritesScreenState extends State<FavoritesScreen> with AsyncLoadMixin<FavoritesScreen> {
   List<Provider> _favorites = [];
   bool _loading = false;
 

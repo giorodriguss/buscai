@@ -8,7 +8,7 @@ class SignupProviderScreen extends ConsumerStatefulWidget {
 }
 
 class _SignupProviderScreenState extends ConsumerState<SignupProviderScreen>
-    with DebouncedValidationMixin {
+    with DebouncedValidationMixin<SignupProviderScreen> {
   final nameController = TextEditingController();
   final emailController = TextEditingController();
   final phoneController = TextEditingController();

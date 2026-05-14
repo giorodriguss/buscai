@@ -358,7 +358,7 @@ class _ServiceCarouselState extends State<ServiceCarousel> {
                     height: 6,
                     margin: const EdgeInsets.symmetric(horizontal: 3),
                     decoration: BoxDecoration(
-                      color: i == index ? Colors.white : Colors.white.withValues(alpha: .5),
+                      color: i == index ? Colors.white : Colors.white.withOpacity(.5),
                       borderRadius: BorderRadius.circular(6),
                     ),
                   ),
@@ -1125,8 +1125,9 @@ class _ProfileStat extends StatelessWidget {
 
 class _HistoryCard extends StatelessWidget {
   final ServiceHistoryItem item;
+  final VoidCallback? onRate;
 
-  const _HistoryCard({required this.item});
+  const _HistoryCard({required this.item, this.onRate});
 
   @override
   Widget build(BuildContext context) {
@@ -1157,7 +1158,10 @@ class _HistoryCard extends StatelessWidget {
             children: [
               Text('R\$ ${service.price}', style: const TextStyle(color: BColors.green, fontWeight: FontWeight.w700)),
               const SizedBox(height: 28),
-              const Text('☆ Avaliar', style: TextStyle(color: BColors.orange, fontSize: 12)),
+              GestureDetector(
+                onTap: onRate,
+                child: const Text('☆ Avaliar', style: TextStyle(color: BColors.orange, fontSize: 12)),
+              ),
             ],
           ),
         ],
@@ -1418,7 +1422,7 @@ class _FloatingDots extends StatelessWidget {
             height: 90,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.white.withValues(alpha: .04),
+              color: Colors.white.withOpacity(.04),
             ),
           ),
         ),
@@ -1488,7 +1492,7 @@ class FormValidators {
 
 // ─── Debounced validation mixin ───────────────────────────────────────────────
 
-mixin DebouncedValidationMixin on State {
+mixin DebouncedValidationMixin<T extends StatefulWidget> on State<T> {
   Timer? _validationDebounce;
 
   void queueValidation(Set<String> validation, String field) {
@@ -1503,10 +1507,10 @@ mixin DebouncedValidationMixin on State {
 
 // ─── Async load mixin ─────────────────────────────────────────────────────────
 
-mixin AsyncLoadMixin on State {
-  Future<void> runAsync<T>({
-    required Future<T> Function() call,
-    required void Function(T data) onSuccess,
+mixin AsyncLoadMixin<T extends StatefulWidget> on State<T> {
+  Future<void> runAsync<R>({
+    required Future<R> Function() call,
+    required void Function(R data) onSuccess,
     required VoidCallback setLoadingTrue,
     required VoidCallback setLoadingFalse,
   }) async {
