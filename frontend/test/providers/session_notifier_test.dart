@@ -16,7 +16,10 @@ void main() {
   });
 
   // Helpers
-  AppUser _user({String id = 'u1', String name = 'João', String email = 'joao@test.com'}) =>
+  AppUser _user(
+          {String id = 'u1',
+          String name = 'João',
+          String email = 'joao@test.com'}) =>
       AppUser(id: id, name: name, email: email);
 
   const _mockService = Service(id: 's1', name: 'Reparo', price: 100);
@@ -41,8 +44,8 @@ void main() {
   );
 
   group('estado inicial', () {
-    test('começa com 2 endereços padrão (Casa e Trabalho)', () {
-      expect(container.read(sessionProvider).savedAddresses.length, equals(2));
+    test('começa sem endereços salvos', () {
+      expect(container.read(sessionProvider).savedAddresses, isEmpty);
     });
 
     test('começa sem usuário logado', () {
@@ -71,27 +74,33 @@ void main() {
 
     test('substitui o usuário anterior ao chamar novamente', () {
       container.read(sessionProvider.notifier).setUser(_user(name: 'João'));
-      container.read(sessionProvider.notifier).setUser(_user(id: 'u2', name: 'Maria', email: 'maria@test.com'));
-      expect(container.read(sessionProvider).currentUser?.name, equals('Maria'));
+      container
+          .read(sessionProvider.notifier)
+          .setUser(_user(id: 'u2', name: 'Maria', email: 'maria@test.com'));
+      expect(
+          container.read(sessionProvider).currentUser?.name, equals('Maria'));
     });
 
     test('preserva os demais campos do estado', () {
       container.read(sessionProvider.notifier).toggleFavorite('prov-99');
       container.read(sessionProvider.notifier).setUser(_user());
-      expect(container.read(sessionProvider).favoriteProviderIds, contains('prov-99'));
+      expect(container.read(sessionProvider).favoriteProviderIds,
+          contains('prov-99'));
     });
   });
 
   group('toggleFavorite', () {
     test('adiciona id quando não está nos favoritos', () {
       container.read(sessionProvider.notifier).toggleFavorite('prov-1');
-      expect(container.read(sessionProvider).favoriteProviderIds, contains('prov-1'));
+      expect(container.read(sessionProvider).favoriteProviderIds,
+          contains('prov-1'));
     });
 
     test('remove id quando já está nos favoritos', () {
       container.read(sessionProvider.notifier).toggleFavorite('prov-1');
       container.read(sessionProvider.notifier).toggleFavorite('prov-1');
-      expect(container.read(sessionProvider).favoriteProviderIds, isNot(contains('prov-1')));
+      expect(container.read(sessionProvider).favoriteProviderIds,
+          isNot(contains('prov-1')));
     });
 
     test('mantém outros ids ao adicionar novo', () {
@@ -115,30 +124,36 @@ void main() {
       container.read(sessionProvider.notifier).toggleFavorite('prov-2');
       container.read(sessionProvider.notifier).toggleFavorite('prov-1');
       container.read(sessionProvider.notifier).toggleFavorite('prov-1');
-      expect(container.read(sessionProvider).favoriteProviderIds.length, equals(2));
+      expect(container.read(sessionProvider).favoriteProviderIds.length,
+          equals(2));
     });
   });
 
   group('addHistoryItem', () {
     test('adiciona item ao histórico', () {
-      final item = ServiceHistoryItem(provider: _mockProvider, service: _mockService, date: 'Hoje');
+      final item = ServiceHistoryItem(
+          provider: _mockProvider, service: _mockService, date: 'Hoje');
       container.read(sessionProvider.notifier).addHistoryItem(item);
       expect(container.read(sessionProvider).history.length, equals(1));
     });
 
     test('insere o mais recente no início da lista', () {
-      final item1 = ServiceHistoryItem(provider: _mockProvider, service: _mockService, date: 'Ontem');
-      final item2 = ServiceHistoryItem(provider: _mockProvider, service: _mockService, date: 'Hoje');
+      final item1 = ServiceHistoryItem(
+          provider: _mockProvider, service: _mockService, date: 'Ontem');
+      final item2 = ServiceHistoryItem(
+          provider: _mockProvider, service: _mockService, date: 'Hoje');
       container.read(sessionProvider.notifier).addHistoryItem(item1);
       container.read(sessionProvider.notifier).addHistoryItem(item2);
-      expect(container.read(sessionProvider).history.first.date, equals('Hoje'));
+      expect(
+          container.read(sessionProvider).history.first.date, equals('Hoje'));
     });
 
     test('acumula todos os itens adicionados', () {
       for (var i = 1; i <= 3; i++) {
         container.read(sessionProvider.notifier).addHistoryItem(
-          ServiceHistoryItem(provider: _mockProvider, service: _mockService, date: '$i'),
-        );
+              ServiceHistoryItem(
+                  provider: _mockProvider, service: _mockService, date: '$i'),
+            );
       }
       expect(container.read(sessionProvider).history.length, equals(3));
     });
@@ -172,15 +187,16 @@ void main() {
 
     test('limpa o histórico', () {
       container.read(sessionProvider.notifier).addHistoryItem(
-        ServiceHistoryItem(provider: _mockProvider, service: _mockService, date: 'Hoje'),
-      );
+            ServiceHistoryItem(
+                provider: _mockProvider, service: _mockService, date: 'Hoje'),
+          );
       container.read(sessionProvider.notifier).reset();
       expect(container.read(sessionProvider).history, isEmpty);
     });
 
-    test('restaura 2 endereços padrão', () {
+    test('restaura lista de endereços vazia', () {
       container.read(sessionProvider.notifier).reset();
-      expect(container.read(sessionProvider).savedAddresses.length, equals(2));
+      expect(container.read(sessionProvider).savedAddresses, isEmpty);
     });
 
     test('restaura selectedAddress para 0', () {

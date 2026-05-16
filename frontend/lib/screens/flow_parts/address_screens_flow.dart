@@ -12,6 +12,22 @@ class _SavedAddress {
     required this.subtitle,
     required this.icon,
   });
+
+  Map<String, dynamic> toLocalJson() => {
+        'type': type,
+        'title': title,
+        'subtitle': subtitle,
+      };
+
+  factory _SavedAddress.fromLocalJson(Map<String, dynamic> json) {
+    final type = json['type'] as String? ?? 'Casa';
+    return _SavedAddress(
+      type: type,
+      title: json['title'] as String? ?? '',
+      subtitle: json['subtitle'] as String? ?? '',
+      icon: _addressIconFor(type),
+    );
+  }
 }
 
 IconData _addressIconFor(String type) {
@@ -24,10 +40,12 @@ class AddressSelectionScreen extends ConsumerStatefulWidget {
   const AddressSelectionScreen({super.key});
 
   @override
-  ConsumerState<AddressSelectionScreen> createState() => _AddressSelectionScreenState();
+  ConsumerState<AddressSelectionScreen> createState() =>
+      _AddressSelectionScreenState();
 }
 
-class _AddressSelectionScreenState extends ConsumerState<AddressSelectionScreen> {
+class _AddressSelectionScreenState
+    extends ConsumerState<AddressSelectionScreen> {
   bool adding = false;
   int? editingAddressIndex;
 
@@ -53,6 +71,8 @@ class _AddressSelectionScreenState extends ConsumerState<AddressSelectionScreen>
   }
 
   void _saveAddress(_SavedAddress address) {
+    // Futuro backend: persistir endereco do usuario em tabela de addresses.
+    // Por enquanto fica no SessionState/local storage do prototipo.
     final index = editingAddressIndex;
     if (index == null) {
       ref.read(sessionProvider.notifier).addAddress(address);
@@ -87,9 +107,11 @@ class _AddressSelectionScreenState extends ConsumerState<AddressSelectionScreen>
                     child: ListView(
                       padding: const EdgeInsets.fromLTRB(20, 26, 20, 20),
                       children: [
-                        const Text('Endereços salvos', style: TextStyle(fontWeight: FontWeight.w700)),
+                        const Text('Endereços salvos',
+                            style: TextStyle(fontWeight: FontWeight.w700)),
                         const SizedBox(height: 18),
-                        ...List.generate(session.savedAddresses.length, (index) {
+                        ...List.generate(session.savedAddresses.length,
+                            (index) {
                           final address = session.savedAddresses[index];
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 14),
@@ -98,7 +120,9 @@ class _AddressSelectionScreenState extends ConsumerState<AddressSelectionScreen>
                               subtitle: address.subtitle,
                               selected: session.selectedAddress == index,
                               icon: address.icon,
-                              onTap: () => ref.read(sessionProvider.notifier).selectAddress(index),
+                              onTap: () => ref
+                                  .read(sessionProvider.notifier)
+                                  .selectAddress(index),
                               onEdit: () => _editAddress(index),
                             ),
                           );
@@ -110,7 +134,8 @@ class _AddressSelectionScreenState extends ConsumerState<AddressSelectionScreen>
                             height: 58,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(14),
-                              border: Border.all(color: BColors.green, width: 2),
+                              border:
+                                  Border.all(color: BColors.green, width: 2),
                             ),
                             child: const Center(
                               child: Row(
@@ -118,7 +143,10 @@ class _AddressSelectionScreenState extends ConsumerState<AddressSelectionScreen>
                                 children: [
                                   Icon(Icons.add_rounded, color: BColors.green),
                                   SizedBox(width: 10),
-                                  Text('Adicionar novo endereço', style: TextStyle(color: BColors.green, fontWeight: FontWeight.w700)),
+                                  Text('Adicionar novo endereço',
+                                      style: TextStyle(
+                                          color: BColors.green,
+                                          fontWeight: FontWeight.w700)),
                                 ],
                               ),
                             ),
@@ -129,7 +157,9 @@ class _AddressSelectionScreenState extends ConsumerState<AddressSelectionScreen>
                   ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-                    child: PrimaryButton(label: 'Confirmar endereço', onPressed: () => Navigator.of(context).pop()),
+                    child: PrimaryButton(
+                        label: 'Confirmar endereço',
+                        onPressed: () => Navigator.of(context).pop()),
                   ),
                 ],
               ),
@@ -161,15 +191,12 @@ class _AddressFormState extends State<_AddressForm> {
   final complementController = TextEditingController();
   final districtController = TextEditingController();
   final cityController = TextEditingController();
-  final stateController = TextEditingController(text: 'SP');
+  final stateController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     selectedType = widget.initialAddress?.type ?? 'Casa';
-    if (widget.initialAddress != null) {
-      cityController.text = 'São Paulo';
-    }
   }
 
   @override
@@ -188,18 +215,26 @@ class _AddressFormState extends State<_AddressForm> {
     final street = streetController.text.trim();
     final number = numberController.text.trim();
     final district = districtController.text.trim();
-    final city = cityController.text.trim().isEmpty ? 'São Paulo' : cityController.text.trim();
-    final state = stateController.text.trim().isEmpty ? 'SP' : stateController.text.trim();
+    final city = cityController.text.trim();
+    final state = stateController.text.trim();
     final firstLine = [
-      if (street.isNotEmpty) street else 'Endereço sem rua',
+      if (street.isNotEmpty) street,
       if (number.isNotEmpty) number,
       if (district.isNotEmpty) district,
-    ].join(', ');
+    ].join(', ').trim();
+    final secondLine = [
+      if (city.isNotEmpty) city,
+      if (state.isNotEmpty) state,
+    ].join(' - ').trim();
+    final subtitle = [
+      if (firstLine.isNotEmpty) firstLine,
+      if (secondLine.isNotEmpty) secondLine,
+    ].join('\n');
     widget.onSave(
       _SavedAddress(
         type: selectedType,
         title: selectedType,
-        subtitle: '$firstLine\n$city - $state',
+        subtitle: subtitle,
         icon: _addressIconFor(selectedType),
       ),
     );
@@ -213,12 +248,15 @@ class _AddressFormState extends State<_AddressForm> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Novo endereço', style: TextStyle(fontWeight: FontWeight.w700)),
-            TextButton(onPressed: widget.onCancel, child: const Text('Cancelar')),
+            const Text('Novo endereço',
+                style: TextStyle(fontWeight: FontWeight.w700)),
+            TextButton(
+                onPressed: widget.onCancel, child: const Text('Cancelar')),
           ],
         ),
         const SizedBox(height: 12),
-        const Text('Tipo de endereço', style: TextStyle(fontWeight: FontWeight.w700)),
+        const Text('Tipo de endereço',
+            style: TextStyle(fontWeight: FontWeight.w700)),
         const SizedBox(height: 10),
         Row(
           children: [
@@ -252,27 +290,73 @@ class _AddressFormState extends State<_AddressForm> {
         ),
         const SizedBox(height: 18),
         const _FieldLabel('CEP'),
-        TextInputLike(icon: Icons.pin_drop_outlined, hint: '00000-000', controller: cepController),
+        TextInputLike(
+            icon: Icons.pin_drop_outlined,
+            hint: '00000-000',
+            controller: cepController),
         const SizedBox(height: 18),
         Row(
           children: [
-            Expanded(flex: 2, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const _FieldLabel('Rua'), TextInputLike(icon: Icons.route_outlined, hint: 'Nome da rua', controller: streetController)])),
+            Expanded(
+                flex: 2,
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const _FieldLabel('Rua'),
+                      TextInputLike(
+                          icon: Icons.route_outlined,
+                          hint: 'Nome da rua',
+                          controller: streetController)
+                    ])),
             const SizedBox(width: 12),
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const _FieldLabel('Número'), TextInputLike(icon: Icons.numbers_rounded, hint: '123', controller: numberController)])),
+            Expanded(
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                  const _FieldLabel('Número'),
+                  TextInputLike(
+                      icon: Icons.numbers_rounded,
+                      hint: '123',
+                      controller: numberController)
+                ])),
           ],
         ),
         const SizedBox(height: 18),
         const _FieldLabel('Complemento (opcional)'),
-        TextInputLike(icon: Icons.apartment_rounded, hint: 'Apto, bloco, etc.', controller: complementController),
+        TextInputLike(
+            icon: Icons.apartment_rounded,
+            hint: 'Apto, bloco, etc.',
+            controller: complementController),
         const SizedBox(height: 18),
         const _FieldLabel('Bairro'),
-        TextInputLike(icon: Icons.location_city_outlined, hint: 'Nome do bairro', controller: districtController),
+        TextInputLike(
+            icon: Icons.location_city_outlined,
+            hint: 'Nome do bairro',
+            controller: districtController),
         const SizedBox(height: 18),
         Row(
           children: [
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const _FieldLabel('Cidade'), TextInputLike(icon: Icons.location_city_rounded, hint: 'Cidade', controller: cityController)])),
+            Expanded(
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                  const _FieldLabel('Cidade'),
+                  TextInputLike(
+                      icon: Icons.location_city_rounded,
+                      hint: 'Cidade',
+                      controller: cityController)
+                ])),
             const SizedBox(width: 12),
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const _FieldLabel('Estado'), TextInputLike(icon: Icons.map_outlined, hint: 'SP', controller: stateController)])),
+            Expanded(
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                  const _FieldLabel('Estado'),
+                  TextInputLike(
+                      icon: Icons.map_outlined,
+                      hint: 'UF',
+                      controller: stateController)
+                ])),
           ],
         ),
         const SizedBox(height: 28),
@@ -318,14 +402,19 @@ class _AddressType extends StatelessWidget {
         decoration: BoxDecoration(
           color: selected ? BColors.green : Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: selected ? BColors.green : BColors.border, width: 2),
+          border: Border.all(
+              color: selected ? BColors.green : BColors.border, width: 2),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, color: selected ? Colors.white : BColors.black),
             const SizedBox(height: 6),
-            Text(label, style: TextStyle(color: selected ? Colors.white : BColors.black, fontSize: 12, fontWeight: FontWeight.w700)),
+            Text(label,
+                style: TextStyle(
+                    color: selected ? Colors.white : BColors.black,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700)),
           ],
         ),
       ),

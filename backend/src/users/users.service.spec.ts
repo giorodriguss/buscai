@@ -17,6 +17,7 @@ function makeQB(resolved: { data?: any; error?: any } = {}) {
 describe('UsersService', () => {
   let service: UsersService;
   let adminClient: any;
+  let userClient: any;
 
   const mockUser = {
     id: 'user-1',
@@ -24,6 +25,7 @@ describe('UsersService', () => {
     role: 'morador',
     bio: null,
     phone: '11999999999',
+    cpf: '12345678901',
     neighborhood: 'Centro',
     city: 'São Paulo',
     state: 'SP',
@@ -35,13 +37,17 @@ describe('UsersService', () => {
 
   beforeEach(async () => {
     adminClient = { from: jest.fn() };
+    userClient = { from: jest.fn() };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersService,
         {
           provide: SupabaseService,
-          useValue: { getAdminClient: jest.fn().mockReturnValue(adminClient) },
+          useValue: {
+            getAdminClient: jest.fn().mockReturnValue(adminClient),
+            getUserClient: jest.fn().mockReturnValue(userClient),
+          },
         },
       ],
     }).compile();
@@ -73,13 +79,17 @@ describe('UsersService', () => {
         makeQB({ data: null, error: { message: 'No rows found' } }),
       );
 
-      await expect(service.findOne('inexistente')).rejects.toThrow(NotFoundException);
+      await expect(service.findOne('inexistente')).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('lança NotFoundException quando data é null mesmo sem erro', async () => {
       adminClient.from.mockReturnValue(makeQB({ data: null }));
 
-      await expect(service.findOne('user-1')).rejects.toThrow(NotFoundException);
+      await expect(service.findOne('user-1')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -88,17 +98,17 @@ describe('UsersService', () => {
 
     it('atualiza e retorna dados do usuário', async () => {
       const updated = { ...mockUser, ...updateDto };
-      adminClient.from.mockReturnValue(makeQB({ data: updated }));
+      userClient.from.mockReturnValue(makeQB({ data: updated }));
 
       const result = await service.update('user-1', updateDto, 'mock-token');
 
       expect(result).toEqual(updated);
-      expect(adminClient.from).toHaveBeenCalledWith('users');
+      expect(userClient.from).toHaveBeenCalledWith('users');
     });
 
     it('atualiza apenas o usuário com o id correto', async () => {
       const qb = makeQB({ data: mockUser });
-      adminClient.from.mockReturnValue(qb);
+      userClient.from.mockReturnValue(qb);
 
       await service.update('user-1', updateDto, 'mock-token');
 
@@ -107,21 +117,53 @@ describe('UsersService', () => {
     });
 
     it('lança BadRequestException quando update falha no banco', async () => {
-      adminClient.from.mockReturnValue(makeQB({ error: { message: 'Erro ao atualizar' } }));
+      userClient.from.mockReturnValue(
+        makeQB({ error: { message: 'Erro ao atualizar' } }),
+      );
 
-      await expect(service.update('user-1', updateDto, 'mock-token')).rejects.toThrow(BadRequestException);
+      await expect(
+        service.update('user-1', updateDto, 'mock-token'),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('aceita atualização parcial dos campos', async () => {
       const partialUpdate = { bio: 'Desenvolvedor freelancer' };
       const updated = { ...mockUser, bio: 'Desenvolvedor freelancer' };
       const qb = makeQB({ data: updated });
-      adminClient.from.mockReturnValue(qb);
+      userClient.from.mockReturnValue(qb);
 
-      const result = await service.update('user-1', partialUpdate, 'mock-token');
+      const result = await service.update(
+        'user-1',
+        partialUpdate,
+        'mock-token',
+      );
 
       expect(result.bio).toBe('Desenvolvedor freelancer');
       expect(qb.update).toHaveBeenCalledWith(partialUpdate);
+    });
+
+    it('normaliza CPF antes de atualizar o banco', async () => {
+      const qb = makeQB({ data: { ...mockUser, cpf: '12345678901' } });
+      userClient.from.mockReturnValue(qb);
+
+      await service.update('user-1', { cpf: '123.456.789-01' }, 'mock-token');
+
+      expect(qb.update).toHaveBeenCalledWith({ cpf: '12345678901' });
+    });
+
+    it('retorna mensagem clara quando CPF ja existe', async () => {
+      userClient.from.mockReturnValue(
+        makeQB({
+          error: {
+            code: '23505',
+            message: 'duplicate key value violates unique constraint users_cpf',
+          },
+        }),
+      );
+
+      await expect(
+        service.update('user-1', { cpf: '12345678901' }, 'mock-token'),
+      ).rejects.toThrow('CPF já cadastrado');
     });
   });
 });

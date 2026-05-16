@@ -17,7 +17,7 @@ class _MainShellState extends State<MainShell> {
     final pages = [
       HomeScreen(user: widget.user, onSearch: () => setState(() => _index = 1)),
       const SearchScreen(),
-      const FavoritesScreen(),
+      ServicesScreen(isProviderView: widget.user.isProvider),
       ProfileScreen(user: widget.user),
       if (widget.user.isProvider) CollaboratorScreen(user: widget.user),
     ];

@@ -1,13 +1,14 @@
 part of '../figma_flow.dart';
 
-class FavoritesScreen extends StatefulWidget {
+class FavoritesScreen extends ConsumerStatefulWidget {
   const FavoritesScreen({super.key});
 
   @override
-  State<FavoritesScreen> createState() => _FavoritesScreenState();
+  ConsumerState<FavoritesScreen> createState() => _FavoritesScreenState();
 }
 
-class _FavoritesScreenState extends State<FavoritesScreen> with AsyncLoadMixin<FavoritesScreen> {
+class _FavoritesScreenState extends ConsumerState<FavoritesScreen>
+    with AsyncLoadMixin<FavoritesScreen> {
   List<Provider> _favorites = [];
   bool _loading = false;
 
@@ -26,18 +27,24 @@ class _FavoritesScreenState extends State<FavoritesScreen> with AsyncLoadMixin<F
 
   @override
   Widget build(BuildContext context) {
+    final favoriteIds = ref.watch(sessionProvider).favoriteProviderIds;
+    final localFavorites = mockProviders
+        .where((provider) => favoriteIds.contains(provider.id))
+        .toList();
+    final providers = localFavorites.isNotEmpty ? localFavorites : _favorites;
+
     return SimplePage(
       title: 'Favoritos',
       bottomPadding: true,
-      child: _loading
+      child: _loading && providers.isEmpty
           ? const AppLoadingIndicator(verticalPadding: 48)
-          : _favorites.isEmpty
+          : providers.isEmpty
               ? const EmptyPanel(
                   icon: Icons.favorite_border_rounded,
                   text: 'Seus prestadores favoritos aparecerão aqui.',
                 )
               : Column(
-                  children: _favorites
+                  children: providers
                       .map(
                         (provider) => Padding(
                           padding: const EdgeInsets.only(bottom: 12),

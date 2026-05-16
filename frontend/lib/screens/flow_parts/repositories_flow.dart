@@ -37,14 +37,60 @@ class AuthRepository {
     required String fullName,
     required String email,
     required String password,
+    required String cpf,
     required String phone,
   }) async {
     await AuthApiService.instance.register(
       fullName: fullName,
       email: email,
       password: password,
-      role: 'cliente',
+      cpf: cpf,
+      // O backend aceita apenas "morador" ou "prestador".
+      // No front a tela chama de usuário/cliente, mas para a API o papel correto é morador.
+      role: 'morador',
       phone: phone,
     );
+  }
+
+  static Future<void> registerProvider({
+    required String fullName,
+    required String email,
+    required String password,
+    required String cpf,
+    required String phone,
+  }) async {
+    await AuthApiService.instance.register(
+      fullName: fullName,
+      email: email,
+      password: password,
+      cpf: cpf,
+      role: 'prestador',
+      phone: phone,
+    );
+  }
+
+  static Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) =>
+      AuthApiService.instance.changePassword(
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+      );
+
+  static Future<void> verifyPassword({required String currentPassword}) =>
+      AuthApiService.instance.verifyPassword(currentPassword: currentPassword);
+
+  static Future<AppUser> updateMe({
+    String? fullName,
+    String? cpf,
+    String? phone,
+  }) async {
+    final result = await AuthApiService.instance.updateMe(
+      fullName: fullName,
+      cpf: cpf,
+      phone: phone,
+    );
+    return AppUser.fromApi(result);
   }
 }

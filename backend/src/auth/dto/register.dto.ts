@@ -37,6 +37,12 @@ export class RegisterDto {
   @IsOptional()
   phone?: string;
 
+  @ApiProperty({ example: '123.456.789-00', required: false })
+  @IsString()
+  @IsOptional()
+  @MaxLength(14)
+  cpf?: string;
+
   @ApiProperty({ example: 'Centro', required: false })
   @IsString()
   @IsOptional()

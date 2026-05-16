@@ -12,13 +12,11 @@ class CollaboratorData {
   final List<String> portfolio;
 
   const CollaboratorData({
-    this.category = 'ENCANADOR',
-    this.years = 10,
-    this.coverImage =
-        'https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=900',
+    this.category = '',
+    this.years = 0,
+    this.coverImage = '',
     this.profileColor = BColors.green,
-    this.about =
-        'Profissional com mais de 10 anos de experiência em manutenção hidráulica residencial e comercial.',
+    this.about = '',
     this.services = const [],
     this.days = const {},
     this.hours = const {},
@@ -52,27 +50,19 @@ class CollaboratorData {
 
 class CollaboratorNotifier extends Notifier<CollaboratorData> {
   @override
-  CollaboratorData build() => CollaboratorData(
-        services: [
-          ProviderServiceDraft(name: 'Desentupimento de pia', price: '80', duration: '1h'),
-          ProviderServiceDraft(name: 'Reparo de vazamento', price: '100', duration: '1-2h'),
-          ProviderServiceDraft(name: 'Instalação de torneira', price: '90', duration: '45min'),
-        ],
-        days: const {'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'},
-        hours: const {'08:00', '09:00', '10:00', '14:00', '15:00', '16:00', '17:00'},
-        portfolio: const [
-          'https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=500',
-          'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=500',
-          'https://images.unsplash.com/photo-1581092583537-20d51b4b4f1b?w=500',
-          'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500',
-        ],
-      );
+  // Estado local temporario do perfil do colaborador. Futuro backend: carregar
+  // de providers/posts/services/availability/portfolio pelo usuario logado.
+  CollaboratorData build() => const CollaboratorData();
+
+  void setCategory(String category) =>
+      state = state.copyWith(category: category.toUpperCase());
 
   void setYears(int years) => state = state.copyWith(years: years);
 
   void setCoverImage(String url) => state = state.copyWith(coverImage: url);
 
-  void setProfileColor(Color color) => state = state.copyWith(profileColor: color);
+  void setProfileColor(Color color) =>
+      state = state.copyWith(profileColor: color);
 
   void setAbout(String about) => state = state.copyWith(about: about);
 
@@ -106,12 +96,6 @@ class CollaboratorNotifier extends Notifier<CollaboratorData> {
 
   void reset(String selectedCategory) => state = CollaboratorData(
         category: selectedCategory.toUpperCase(),
-        years: 0,
-        about: '',
-        services: const [],
-        days: const {},
-        hours: const {},
-        portfolio: const [],
       );
 }
 

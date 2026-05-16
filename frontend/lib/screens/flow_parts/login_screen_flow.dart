@@ -11,7 +11,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _forgotPassword = false;
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-  bool loginFailed = false;
+  String? emailError;
+  String? passwordError;
   bool _loading = false;
 
   @override
@@ -26,29 +27,36 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _doLogin() async {
     final email = emailController.text.trim();
     final password = passwordController.text;
-    if (email.isEmpty || password.isEmpty) {
-      setState(() => loginFailed = true);
-      return;
-    }
     setState(() {
-      _loading = true;
-      loginFailed = false;
+      emailError = email.isEmpty ? 'Informe o e-mail' : null;
+      passwordError = password.isEmpty ? 'Informe a senha' : null;
     });
+    if (emailError != null || passwordError != null) return;
+
+    setState(() => _loading = true);
     try {
       final user = await AuthRepository.login(email: email, password: password);
+      if (user.isProvider) {
+        if (!mounted) return;
+        setState(() {
+          emailError = 'Este e-mail pertence a uma conta já cadastrada';
+          passwordError = null;
+        });
+        return;
+      }
       ref.read(sessionProvider.notifier).setUser(user);
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => MainShell(user: user)),
       );
     } on DioException catch (e) {
-      setState(() => loginFailed = true);
-      final msg = (e.response?.data as Map?)?['message']?.toString()
-          ?? 'Credenciais inválidas';
+      final msg = (e.response?.data as Map?)?['message']?.toString() ??
+          'Credenciais inválidas';
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(msg)),
-        );
+        setState(() {
+          emailError = msg;
+          passwordError = 'Verifique sua senha';
+        });
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -75,7 +83,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           TextInputType.emailAddress,
           false,
           controller: emailController,
-          errorText: loginFailed ? 'E-mail ou senha incorretos' : null,
+          errorText: emailError,
+          onChanged: (_) => setState(() => emailError = null),
         ),
         FieldSpec(
           Icons.lock_outline_rounded,
@@ -83,7 +92,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           TextInputType.visiblePassword,
           true,
           controller: passwordController,
-          errorText: loginFailed ? 'Verifique suas credenciais' : null,
+          errorText: passwordError,
+          onChanged: (_) => setState(() => passwordError = null),
         ),
       ],
       forgot: TextButton(
@@ -93,6 +103,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           style: TextStyle(color: BColors.orange, fontFamily: 'Georgia'),
         ),
       ),
+      socialActions: const _SocialLoginButtons(),
       primaryLabel: _loading ? 'Entrando...' : 'Entrar',
       onPrimary: _loading ? () {} : _login,
       secondaryLabel: 'Entrar como Prestador',
@@ -105,6 +116,99 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => const SignupScreen()),
         ),
+      ),
+    );
+  }
+}
+
+class _SocialLoginButtons extends StatelessWidget {
+  const _SocialLoginButtons();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
+      children: [
+        Row(
+          children: [
+            Expanded(child: Divider(color: BColors.border)),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                'ou entre com',
+                style: TextStyle(color: BColors.gray, fontSize: 12),
+              ),
+            ),
+            Expanded(child: Divider(color: BColors.border)),
+          ],
+        ),
+        SizedBox(height: 12),
+        _SocialAuthButton(
+          provider: _SocialProvider.google,
+          label: 'Faça login com o Google',
+        ),
+        SizedBox(height: 10),
+        _SocialAuthButton(
+          provider: _SocialProvider.apple,
+          label: 'Faça login com a Apple',
+        ),
+      ],
+    );
+  }
+}
+
+enum _SocialProvider { google, apple }
+
+class _SocialAuthButton extends StatelessWidget {
+  final _SocialProvider provider;
+  final String label;
+
+  const _SocialAuthButton({required this.provider, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 58,
+      child: OutlinedButton(
+        onPressed: () {},
+        style: OutlinedButton.styleFrom(
+          backgroundColor: Colors.white,
+          foregroundColor: const Color(0xFF3B3B3B),
+          side: const BorderSide(color: Color(0xFF2F2F2F), width: 1.5),
+          shape: const StadiumBorder(),
+          textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            provider == _SocialProvider.apple
+                ? const Icon(
+                    Icons.apple_rounded,
+                    size: 30,
+                    color: Color(0xFF303030),
+                  )
+                : const _GoogleGlyph(),
+            const SizedBox(width: 14),
+            Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _GoogleGlyph extends StatelessWidget {
+  const _GoogleGlyph();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Text(
+      'G',
+      style: TextStyle(
+        color: Color(0xFF4285F4),
+        fontSize: 27,
+        fontWeight: FontWeight.w900,
+        fontFamily: 'Arial',
       ),
     );
   }

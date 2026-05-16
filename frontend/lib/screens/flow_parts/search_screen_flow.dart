@@ -1,13 +1,13 @@
 part of '../figma_flow.dart';
 
-class SearchScreen extends StatefulWidget {
+class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
 
   @override
-  State<SearchScreen> createState() => _SearchScreenState();
+  ConsumerState<SearchScreen> createState() => _SearchScreenState();
 }
 
-class _SearchScreenState extends State<SearchScreen> {
+class _SearchScreenState extends ConsumerState<SearchScreen> {
   String query = '';
   String? selectedCategory;
   final searchController = TextEditingController();
@@ -27,12 +27,14 @@ class _SearchScreenState extends State<SearchScreen> {
     ('Educação', Icons.school_rounded, BColors.orange),
   ];
 
-  List<Provider> get results {
-    var providers = [...mockProviders];
+  List<Provider> _results(List<Provider> baseProviders) {
+    var providers = [...baseProviders];
     if (query.isNotEmpty) {
       final q = query.toLowerCase();
       providers = providers
-          .where((p) => p.name.toLowerCase().contains(q) || p.category.toLowerCase().contains(q))
+          .where((p) =>
+              p.name.toLowerCase().contains(q) ||
+              p.category.toLowerCase().contains(q))
           .toList();
     }
     if (selectedCategory != null) {
@@ -51,11 +53,22 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     final showingResults = selectedCategory != null || query.isNotEmpty;
+    final session = ref.watch(sessionProvider);
+    // Futuro backend: busca deve consultar GET /providers/search e respeitar
+    // perfil_publico=true no banco. O item local simula o perfil do colaborador.
+    final localProvider =
+        localCollaboratorProvider(session, ref.watch(collaboratorProvider));
+    final providers = [
+      ...mockProviders,
+      if (localProvider != null) localProvider,
+    ];
+    final results = _results(providers);
 
     return Column(
       children: [
         Container(
-          padding: EdgeInsets.fromLTRB(20, MediaQuery.of(context).padding.top + 16, 20, 16),
+          padding: EdgeInsets.fromLTRB(
+              20, MediaQuery.of(context).padding.top + 16, 20, 16),
           color: BColors.green,
           child: Row(
             children: [
@@ -66,11 +79,14 @@ class _SearchScreenState extends State<SearchScreen> {
                     query = '';
                     searchController.clear();
                   }),
-                  icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+                  icon:
+                      const Icon(Icons.arrow_back_rounded, color: Colors.white),
                 ),
               Expanded(
                 child: SearchField(
-                  hint: showingResults ? 'Buscar serviços...' : 'Que serviço você precisa?',
+                  hint: showingResults
+                      ? 'Buscar serviços...'
+                      : 'Que serviço você precisa?',
                   controller: searchController,
                   onChanged: (value) => setState(() => query = value),
                 ),
@@ -103,7 +119,8 @@ class _SearchScreenState extends State<SearchScreen> {
                   itemBuilder: (_, index) {
                     final category = categories[index];
                     return GestureDetector(
-                      onTap: () => setState(() => selectedCategory = category.$1),
+                      onTap: () =>
+                          setState(() => selectedCategory = category.$1),
                       child: Container(
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
@@ -122,7 +139,8 @@ class _SearchScreenState extends State<SearchScreen> {
                                 color: category.$3.withOpacity(.08),
                                 borderRadius: BorderRadius.circular(14),
                               ),
-                              child: Icon(category.$2, color: category.$3, size: 23),
+                              child: Icon(category.$2,
+                                  color: category.$3, size: 23),
                             ),
                             const SizedBox(height: 10),
                             Text(

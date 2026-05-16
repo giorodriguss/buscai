@@ -11,7 +11,8 @@ function makeQB(resolved: { data?: any; error?: any } = {}) {
     insert: jest.fn().mockReturnThis(),
     eq: jest.fn().mockReturnThis(),
     single: jest.fn().mockResolvedValue(value),
-    then: (res: Function, rej: Function) => Promise.resolve(value).then(res as any, rej as any),
+    then: (res: Function, rej: Function) =>
+      Promise.resolve(value).then(res as any, rej as any),
   };
   return qb;
 }
@@ -25,7 +26,16 @@ describe('AuthService', () => {
   beforeEach(async () => {
     adminClient = {
       from: jest.fn(),
-      auth: { admin: { createUser: jest.fn() } },
+      auth: {
+        admin: {
+          createUser: jest.fn(),
+          listUsers: jest.fn().mockResolvedValue({ data: { users: [] } }),
+          getUserById: jest.fn().mockResolvedValue({
+            data: { user: { email: 'joao@test.com' } },
+            error: null,
+          }),
+        },
+      },
     };
     anonClient = {
       auth: { signInWithPassword: jest.fn() },
@@ -66,13 +76,18 @@ describe('AuthService', () => {
         error: null,
       });
       adminClient.from
+        .mockReturnValueOnce(makeQB({ data: [] }))
         .mockReturnValueOnce(makeQB())
         .mockReturnValueOnce(makeQB());
 
       const result = await service.register(dto);
 
       expect(result.message).toContain('Verifique seu e-mail');
-      expect(result.user).toMatchObject({ id: 'uid-1', email: dto.email, full_name: dto.full_name });
+      expect(result.user).toMatchObject({
+        id: 'uid-1',
+        email: dto.email,
+        full_name: dto.full_name,
+      });
       expect(jwtSign).not.toHaveBeenCalled();
     });
 
@@ -82,14 +97,18 @@ describe('AuthService', () => {
         error: null,
       });
       adminClient.from
+        .mockReturnValueOnce(makeQB({ data: [] }))
         .mockReturnValueOnce(makeQB())
         .mockReturnValueOnce(makeQB());
 
       await service.register(dto);
 
       expect(adminClient.from).toHaveBeenCalledWith('subscriptions');
-      const subsQB = adminClient.from.mock.results[1].value;
-      expect(subsQB.insert).toHaveBeenCalledWith({ user_id: 'uid-1', plan: 'free' });
+      const subsQB = adminClient.from.mock.results[2].value;
+      expect(subsQB.insert).toHaveBeenCalledWith({
+        user_id: 'uid-1',
+        plan: 'free',
+      });
     });
 
     it('lança BadRequestException quando Supabase Auth retorna erro', async () => {
@@ -97,8 +116,37 @@ describe('AuthService', () => {
         data: null,
         error: { message: 'Email já cadastrado' },
       });
+      adminClient.from.mockReturnValueOnce(makeQB({ data: [] }));
 
       await expect(service.register(dto)).rejects.toThrow(BadRequestException);
+    });
+
+    it('retorna todos os conflitos de cadastro antes de criar usuário', async () => {
+      adminClient.auth.admin.listUsers.mockResolvedValue({
+        data: { users: [{ email: dto.email }] },
+      });
+      adminClient.from.mockReturnValueOnce(
+        makeQB({
+          data: [{ cpf: '12345678901', phone: '11999999999' }],
+        }),
+      );
+
+      await expect(
+        service.register({
+          ...dto,
+          cpf: '123.456.789-01',
+          phone: '11 99999-9999',
+        }),
+      ).rejects.toMatchObject({
+        response: {
+          message: {
+            email: 'E-mail já cadastrado',
+            cpf: 'CPF já cadastrado',
+            phone: 'Telefone já cadastrado',
+          },
+        },
+      });
+      expect(adminClient.auth.admin.createUser).not.toHaveBeenCalled();
     });
 
     it('lança BadRequestException quando insert na tabela users falha', async () => {
@@ -106,26 +154,38 @@ describe('AuthService', () => {
         data: { user: { id: 'uid-1' } },
         error: null,
       });
-      adminClient.from.mockReturnValueOnce(makeQB({ error: { message: 'FK violation' } }));
+      adminClient.from
+        .mockReturnValueOnce(makeQB({ data: [] }))
+        .mockReturnValueOnce(makeQB({ error: { message: 'FK violation' } }));
 
       await expect(service.register(dto)).rejects.toThrow(BadRequestException);
     });
 
     it('passa os campos opcionais corretamente ao inserir no banco', async () => {
-      const fullDto = { ...dto, phone: '11999999999', neighborhood: 'Centro', city: 'SP', state: 'SP' };
+      const fullDto = {
+        ...dto,
+        phone: '11999999999',
+        neighborhood: 'Centro',
+        city: 'SP',
+        state: 'SP',
+      };
       adminClient.auth.admin.createUser.mockResolvedValue({
         data: { user: { id: 'uid-1' } },
         error: null,
       });
       const usersQB = makeQB();
       adminClient.from
+        .mockReturnValueOnce(makeQB({ data: [] }))
         .mockReturnValueOnce(usersQB)
         .mockReturnValueOnce(makeQB());
 
       await service.register(fullDto);
 
       expect(usersQB.insert).toHaveBeenCalledWith(
-        expect.objectContaining({ phone: '11999999999', neighborhood: 'Centro' }),
+        expect.objectContaining({
+          phone: '11999999999',
+          neighborhood: 'Centro',
+        }),
       );
     });
   });
@@ -144,7 +204,7 @@ describe('AuthService', () => {
       const result = await service.login(dto);
 
       expect(result.access_token).toBe('mock-token');
-      expect(result.user).toEqual(mockUser);
+      expect(result.user).toEqual({ ...mockUser, email: dto.email });
     });
 
     it('lança UnauthorizedException com credenciais inválidas', async () => {
@@ -173,14 +233,18 @@ describe('AuthService', () => {
 
       const result = await service.me('uid-1');
 
-      expect(result).toEqual(mockUser);
+      expect(result).toEqual({ ...mockUser, email: 'joao@test.com' });
       expect(adminClient.from).toHaveBeenCalledWith('users');
     });
 
     it('lança UnauthorizedException quando query retorna erro', async () => {
-      adminClient.from.mockReturnValue(makeQB({ error: { message: 'Not found' } }));
+      adminClient.from.mockReturnValue(
+        makeQB({ error: { message: 'Not found' } }),
+      );
 
-      await expect(service.me('invalid-id')).rejects.toThrow(UnauthorizedException);
+      await expect(service.me('invalid-id')).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
   });
 });

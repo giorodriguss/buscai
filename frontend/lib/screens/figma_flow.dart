@@ -1,9 +1,12 @@
-import 'dart:async';
+﻿import 'dart:async';
+import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/auth_service.dart';
 import '../services/providers_service.dart';
 import '../services/favorites_service.dart';
@@ -26,6 +29,7 @@ part 'flow_parts/collaborator_screen_flow.dart';
 part 'flow_parts/edit_provider_profile_screen_flow.dart';
 part 'flow_parts/availability_screens_flow.dart';
 part 'flow_parts/portfolio_manager_screen_flow.dart';
+part 'flow_parts/services_screen_flow.dart';
 part 'flow_parts/favorites_screen_flow.dart';
 part 'flow_parts/category_selection_screen_flow.dart';
 part 'flow_parts/address_screens_flow.dart';
@@ -63,6 +67,18 @@ class Service {
   final int price;
 
   const Service({required this.id, required this.name, required this.price});
+
+  Map<String, dynamic> toLocalJson() => {
+        'id': id,
+        'name': name,
+        'price': price,
+      };
+
+  factory Service.fromLocalJson(Map<String, dynamic> json) => Service(
+        id: json['id'] as String? ?? '',
+        name: json['name'] as String? ?? '',
+        price: (json['price'] as num?)?.toInt() ?? 0,
+      );
 }
 
 Map<String, dynamic> _jsonMap(Object? value) =>
@@ -113,6 +129,7 @@ class AppUser {
   final String id;
   String name;
   String email;
+  String cpf;
   String phone;
   String photoUrl;
   String neighborhood;
@@ -122,6 +139,7 @@ class AppUser {
     this.id = '',
     required this.name,
     required this.email,
+    this.cpf = '',
     this.phone = '',
     this.photoUrl = '',
     this.neighborhood = '',
@@ -132,6 +150,7 @@ class AppUser {
         id: json['id'] as String? ?? '',
         name: json['full_name'] as String? ?? '',
         email: json['email'] as String? ?? '',
+        cpf: json['cpf'] as String? ?? '',
         phone: json['phone'] as String? ?? '',
         photoUrl: json['avatar_url'] as String? ?? '',
         neighborhood: json['neighborhood'] as String? ?? '',
@@ -152,6 +171,94 @@ class ServiceHistoryItem {
   });
 }
 
+// Status local do agendamento. Futuro backend: isso deve virar enum/coluna na
+// tabela de servicos/agendamentos, mantendo a mesma ideia de fluxo:
+// pendente -> realizado -> avaliado.
+enum ScheduledServiceStatus {
+  pending,
+  completed,
+  reviewed,
+}
+
+// Agendamento criado quando o morador escolhe servico, data e horario no perfil
+// do prestador e toca em "Agendar". Por enquanto fica so no Riverpod para o
+// front refletir a mudanca sem depender do banco.
+class ScheduledService {
+  final String id;
+  final Provider provider;
+  final Service service;
+  final String date;
+  final String hour;
+  final ScheduledServiceStatus status;
+  final bool waitingResidentConfirmation;
+  final int? rating;
+  final String? reviewComment;
+
+  const ScheduledService({
+    required this.id,
+    required this.provider,
+    required this.service,
+    required this.date,
+    required this.hour,
+    this.status = ScheduledServiceStatus.pending,
+    this.waitingResidentConfirmation = false,
+    this.rating,
+    this.reviewComment,
+  });
+
+  ScheduledService copyWith({
+    ScheduledServiceStatus? status,
+    bool? waitingResidentConfirmation,
+    int? rating,
+    String? reviewComment,
+  }) {
+    return ScheduledService(
+      id: id,
+      provider: provider,
+      service: service,
+      date: date,
+      hour: hour,
+      status: status ?? this.status,
+      waitingResidentConfirmation:
+          waitingResidentConfirmation ?? this.waitingResidentConfirmation,
+      rating: rating ?? this.rating,
+      reviewComment: reviewComment ?? this.reviewComment,
+    );
+  }
+
+  Map<String, dynamic> toLocalJson() => {
+        'id': id,
+        'provider': provider.toLocalJson(),
+        'service': service.toLocalJson(),
+        'date': date,
+        'hour': hour,
+        'status': status.name,
+        'waitingResidentConfirmation': waitingResidentConfirmation,
+        'rating': rating,
+        'reviewComment': reviewComment,
+      };
+
+  factory ScheduledService.fromLocalJson(Map<String, dynamic> json) {
+    final provider = Provider.fromLocalJson(_jsonMap(json['provider']));
+    return ScheduledService(
+      id: json['id'] as String? ??
+          DateTime.now().microsecondsSinceEpoch.toString(),
+      provider: provider,
+      service: Service.fromLocalJson(_jsonMap(json['service'])),
+      date: json['date'] as String? ?? '',
+      hour: json['hour'] as String? ?? '',
+      status: ScheduledServiceStatus.values.firstWhere(
+        (status) => status.name == json['status'],
+        orElse: () => ScheduledServiceStatus.pending,
+      ),
+      waitingResidentConfirmation:
+          json['waitingResidentConfirmation'] as bool? ?? false,
+      rating: (json['rating'] as num?)?.toInt(),
+      reviewComment: json['reviewComment'] as String?,
+    );
+  }
+}
+
 class UserServiceReview {
   final Provider provider;
   final Service service;
@@ -166,6 +273,75 @@ class UserServiceReview {
     required this.comment,
     required this.date,
   });
+
+  Map<String, dynamic> toLocalJson() => {
+        'provider': provider.toLocalJson(),
+        'service': service.toLocalJson(),
+        'rating': rating,
+        'comment': comment,
+        'date': date,
+      };
+
+  factory UserServiceReview.fromLocalJson(Map<String, dynamic> json) =>
+      UserServiceReview(
+        provider: Provider.fromLocalJson(_jsonMap(json['provider'])),
+        service: Service.fromLocalJson(_jsonMap(json['service'])),
+        rating: (json['rating'] as num?)?.toInt() ?? 5,
+        comment: json['comment'] as String? ?? '',
+        date: json['date'] as String? ?? 'Hoje',
+      );
+}
+
+class AppNotification {
+  final String id;
+  final IconData icon;
+  final String title;
+  final String message;
+  final String timeLabel;
+  final bool unread;
+
+  const AppNotification({
+    required this.id,
+    required this.icon,
+    required this.title,
+    required this.message,
+    required this.timeLabel,
+    this.unread = true,
+  });
+
+  AppNotification copyWith({bool? unread}) => AppNotification(
+        id: id,
+        icon: icon,
+        title: title,
+        message: message,
+        timeLabel: timeLabel,
+        unread: unread ?? this.unread,
+      );
+
+  Map<String, dynamic> toLocalJson() => {
+        'id': id,
+        'icon': icon.codePoint,
+        'title': title,
+        'message': message,
+        'timeLabel': timeLabel,
+        'unread': unread,
+      };
+
+  factory AppNotification.fromLocalJson(Map<String, dynamic> json) {
+    return AppNotification(
+      id: json['id'] as String? ??
+          DateTime.now().microsecondsSinceEpoch.toString(),
+      icon: IconData(
+        (json['icon'] as num?)?.toInt() ??
+            Icons.notifications_none_rounded.codePoint,
+        fontFamily: 'MaterialIcons',
+      ),
+      title: json['title'] as String? ?? 'Notificação',
+      message: json['message'] as String? ?? '',
+      timeLabel: json['timeLabel'] as String? ?? 'Agora',
+      unread: json['unread'] as bool? ?? true,
+    );
+  }
 }
 
 // Validacoes iguais para cadastro comum e cadastro de prestador.
@@ -210,7 +386,8 @@ class PhoneInputFormatter extends TextInputFormatter {
   const PhoneInputFormatter();
 
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
     // O usuário digita só números; o campo mostra automaticamente 00 90000-0000.
     final digits = newValue.text.replaceAll(RegExp(r'\D'), '');
     final limited = digits.length > 11 ? digits.substring(0, 11) : digits;
@@ -218,6 +395,28 @@ class PhoneInputFormatter extends TextInputFormatter {
     for (var i = 0; i < limited.length; i++) {
       if (i == 2) buffer.write(' ');
       if (i == 7) buffer.write('-');
+      buffer.write(limited[i]);
+    }
+    final formatted = buffer.toString();
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+}
+
+class CpfInputFormatter extends TextInputFormatter {
+  const CpfInputFormatter();
+
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    final digits = newValue.text.replaceAll(RegExp(r'\D'), '');
+    final limited = digits.length > 11 ? digits.substring(0, 11) : digits;
+    final buffer = StringBuffer();
+    for (var i = 0; i < limited.length; i++) {
+      if (i == 3 || i == 6) buffer.write('.');
+      if (i == 9) buffer.write('-');
       buffer.write(limited[i]);
     }
     final formatted = buffer.toString();
@@ -280,9 +479,7 @@ class Provider {
         .where((u) => u.isNotEmpty)
         .toList();
 
-    final reviews = revs
-        .map((r) => Review.fromApi(_jsonMap(r)))
-        .toList();
+    final reviews = revs.map((r) => Review.fromApi(_jsonMap(r))).toList();
 
     final priceFrom = (json['price_from'] as num?)?.toInt() ?? 0;
     final priceTo = (json['price_to'] as num?)?.toInt() ?? 0;
@@ -310,6 +507,66 @@ class Provider {
       services: const [],
     );
   }
+
+  Map<String, dynamic> toLocalJson() => {
+        'id': id,
+        'name': name,
+        'category': category,
+        'rating': rating,
+        'reviewCount': reviewCount,
+        'distance': distance,
+        'image': image,
+        'coverImage': coverImage,
+        'about': about,
+        'phone': phone,
+        'portfolio': portfolio,
+        'reviews': reviews
+            .map((review) => {
+                  'name': review.name,
+                  'rating': review.rating,
+                  'comment': review.comment,
+                  'date': review.date,
+                })
+            .toList(),
+        'availableHours': availableHours,
+        'pricePerHour': pricePerHour,
+        'priceRange': priceRange,
+        'yearsExperience': yearsExperience,
+        'services': services.map((service) => service.toLocalJson()).toList(),
+      };
+
+  factory Provider.fromLocalJson(Map<String, dynamic> json) => Provider(
+        id: json['id'] as String? ?? '',
+        name: json['name'] as String? ?? '',
+        category: json['category'] as String? ?? '',
+        rating: (json['rating'] as num?)?.toDouble() ?? 0,
+        reviewCount: (json['reviewCount'] as num?)?.toInt() ?? 0,
+        distance: json['distance'] as String? ?? '',
+        image: json['image'] as String? ?? '',
+        coverImage: json['coverImage'] as String? ?? '',
+        about: json['about'] as String? ?? '',
+        phone: json['phone'] as String? ?? '',
+        portfolio:
+            (json['portfolio'] as List? ?? []).whereType<String>().toList(),
+        reviews: (json['reviews'] as List? ?? []).map((review) {
+          final map = _jsonMap(review);
+          return Review(
+            name: map['name'] as String? ?? '',
+            rating: (map['rating'] as num?)?.toInt() ?? 5,
+            comment: map['comment'] as String? ?? '',
+            date: map['date'] as String? ?? '',
+          );
+        }).toList(),
+        availableHours: (json['availableHours'] as List? ?? [])
+            .whereType<String>()
+            .toList(),
+        pricePerHour: (json['pricePerHour'] as num?)?.toInt() ?? 0,
+        priceRange: json['priceRange'] as String? ?? '',
+        yearsExperience: (json['yearsExperience'] as num?)?.toInt() ?? 0,
+        services: (json['services'] as List? ?? [])
+            .map((service) => Service.fromLocalJson(_jsonMap(service)))
+            .toList(),
+      );
 }
 
 // Catalogo mockado usado por Home, Busca e Detalhe. A estrutura ja esta perto
@@ -324,8 +581,10 @@ const mockProviders = [
     rating: 4.8,
     reviewCount: 127,
     distance: '0.5 km',
-    image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=300&h=300&fit=crop',
-    coverImage: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=800',
+    image:
+        'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=300&h=300&fit=crop',
+    coverImage:
+        'https://images.unsplash.com/photo-1581092160562-40aa08e78837?w=800',
     about:
         'Profissional com mais de 10 anos de experiência em manutenção hidráulica residencial e comercial. Atendimento rápido e garantia em todos os serviços.',
     phone: '5511999999999',
@@ -371,8 +630,10 @@ const mockProviders = [
     pricePerHour: 95,
     priceRange: 'R\$ 90-180',
     yearsExperience: 6,
-    image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300&h=300&fit=crop',
-    coverImage: 'https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=800',
+    image:
+        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300&h=300&fit=crop',
+    coverImage:
+        'https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=800',
     about:
         'Eletricista certificada, especialista em instalações elétricas e manutenção preventiva. Trabalho com segurança e qualidade.',
     phone: '5511988888888',
@@ -406,8 +667,10 @@ const mockProviders = [
     pricePerHour: 120,
     priceRange: 'R\$ 200-800',
     yearsExperience: 15,
-    image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=300&fit=crop',
-    coverImage: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=800',
+    image:
+        'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=300&fit=crop',
+    coverImage:
+        'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=800',
     about:
         '15 anos de experiência em pintura residencial e comercial. Acabamento perfeito garantido.',
     phone: '5511977777777',
@@ -446,8 +709,10 @@ const mockProviders = [
     pricePerHour: 60,
     priceRange: 'R\$ 50-100',
     yearsExperience: 8,
-    image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&h=300&fit=crop',
-    coverImage: 'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=800',
+    image:
+        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&h=300&fit=crop',
+    coverImage:
+        'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=800',
     about:
         'Manicure e pedicure profissional. Atendo em domicílio com todos os cuidados de higiene.',
     phone: '5511966666666',
@@ -481,8 +746,10 @@ const mockProviders = [
     pricePerHour: 110,
     priceRange: 'R\$ 100-300',
     yearsExperience: 12,
-    image: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=300&h=300&fit=crop',
-    coverImage: 'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800',
+    image:
+        'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=300&h=300&fit=crop',
+    coverImage:
+        'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800',
     about:
         'Mecânico automotivo com oficina própria. Especialista em revisão e manutenção de veículos.',
     phone: '5511955555555',
@@ -491,7 +758,9 @@ const mockProviders = [
       Service(id: '2', name: 'Alinhamento e balanceamento', price: 120),
       Service(id: '3', name: 'Troca de pastilha de freio', price: 200),
     ],
-    portfolio: ['https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400'],
+    portfolio: [
+      'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400'
+    ],
     availableHours: ['08:00', '09:00', '10:00', '13:00', '14:00'],
     reviews: [],
   ),
@@ -505,8 +774,10 @@ const mockProviders = [
     pricePerHour: 80,
     priceRange: 'R\$ 50-200',
     yearsExperience: 9,
-    image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&h=300&fit=crop',
-    coverImage: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800',
+    image:
+        'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&h=300&fit=crop',
+    coverImage:
+        'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800',
     about:
         'Cabeleireira especializada em cortes modernos, coloração e tratamentos capilares.',
     phone: '5511944444444',
@@ -533,8 +804,10 @@ const mockProviders = [
     pricePerHour: 100,
     priceRange: 'R\$ 150-1000',
     yearsExperience: 18,
-    image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=300&h=300&fit=crop',
-    coverImage: 'https://images.unsplash.com/photo-1513828583688-c52646db42da?w=800',
+    image:
+        'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=300&h=300&fit=crop',
+    coverImage:
+        'https://images.unsplash.com/photo-1513828583688-c52646db42da?w=800',
     about:
         'Marceneiro especialista em móveis planejados e reformas. Trabalho com madeira de qualidade.',
     phone: '5511933333333',
@@ -542,7 +815,9 @@ const mockProviders = [
       Service(id: '1', name: 'Prateleira sob medida', price: 300),
       Service(id: '2', name: 'Armário planejado', price: 1500),
     ],
-    portfolio: ['https://images.unsplash.com/photo-1513828583688-c52646db42da?w=400'],
+    portfolio: [
+      'https://images.unsplash.com/photo-1513828583688-c52646db42da?w=400'
+    ],
     availableHours: ['08:00', '13:00', '14:00'],
     reviews: [],
   ),
@@ -556,8 +831,10 @@ const mockProviders = [
     pricePerHour: 70,
     priceRange: 'R\$ 120-180',
     yearsExperience: 5,
-    image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&h=300&fit=crop',
-    coverImage: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800',
+    image:
+        'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&h=300&fit=crop',
+    coverImage:
+        'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800',
     about:
         'Diarista profissional com experiência em limpeza residencial. Trabalho com produtos próprios.',
     phone: '5511922222222',

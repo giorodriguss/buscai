@@ -27,6 +27,7 @@ class AuthApiService {
     required String email,
     required String password,
     required String role,
+    String? cpf,
     String? phone,
   }) async {
     final res = await _dio.post('/auth/register', data: {
@@ -34,6 +35,7 @@ class AuthApiService {
       'email': email,
       'password': password,
       'role': role,
+      if (cpf != null && cpf.isNotEmpty) 'cpf': cpf,
       if (phone != null && phone.isNotEmpty) 'phone': phone,
     });
     return res.data as Map<String, dynamic>;
@@ -42,6 +44,35 @@ class AuthApiService {
   Future<Map<String, dynamic>> me() async {
     final res = await _dio.get('/auth/me');
     return res.data as Map<String, dynamic>;
+  }
+
+  Future<Map<String, dynamic>> updateMe({
+    String? fullName,
+    String? cpf,
+    String? phone,
+  }) async {
+    final res = await _dio.patch('/users/me', data: {
+      if (fullName != null && fullName.isNotEmpty) 'full_name': fullName,
+      if (cpf != null && cpf.isNotEmpty) 'cpf': cpf,
+      if (phone != null && phone.isNotEmpty) 'phone': phone,
+    });
+    return res.data as Map<String, dynamic>;
+  }
+
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    await _dio.post('/auth/change-password', data: {
+      'currentPassword': currentPassword,
+      'newPassword': newPassword,
+    });
+  }
+
+  Future<void> verifyPassword({required String currentPassword}) async {
+    await _dio.post('/auth/verify-password', data: {
+      'currentPassword': currentPassword,
+    });
   }
 
   Future<void> logout() async {

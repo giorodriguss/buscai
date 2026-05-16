@@ -1,17 +1,20 @@
 part of '../figma_flow.dart';
 
-class LoginProviderScreen extends StatefulWidget {
+class LoginProviderScreen extends ConsumerStatefulWidget {
   const LoginProviderScreen({super.key});
 
   @override
-  State<LoginProviderScreen> createState() => _LoginProviderScreenState();
+  ConsumerState<LoginProviderScreen> createState() =>
+      _LoginProviderScreenState();
 }
 
-class _LoginProviderScreenState extends State<LoginProviderScreen> {
+class _LoginProviderScreenState extends ConsumerState<LoginProviderScreen> {
   bool forgotPassword = false;
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-  bool loginFailed = false;
+  String? emailError;
+  String? passwordError;
+  bool loading = false;
 
   @override
   void dispose() {
@@ -20,12 +23,48 @@ class _LoginProviderScreenState extends State<LoginProviderScreen> {
     super.dispose();
   }
 
+  Future<void> _login() async {
+    final email = emailController.text.trim();
+    final password = passwordController.text;
+    setState(() {
+      emailError = email.isEmpty ? 'Informe o e-mail' : null;
+      passwordError = password.isEmpty ? 'Informe a senha' : null;
+    });
+    if (emailError != null || passwordError != null) return;
+
+    setState(() => loading = true);
+    try {
+      final user = await AuthRepository.login(email: email, password: password);
+      if (!user.isProvider) {
+        setState(() {
+          emailError = 'Este e-mail não pertence a uma conta de prestador';
+          passwordError = null;
+        });
+        return;
+      }
+      ref.read(sessionProvider.notifier).setUser(user);
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => MainShell(user: user)),
+      );
+    } on DioException {
+      if (!mounted) return;
+      setState(() {
+        emailError = 'E-mail de prestador não encontrado';
+        passwordError = 'Senha incorreta ou cadastro inexistente';
+      });
+    } finally {
+      if (mounted) setState(() => loading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (forgotPassword) {
       return ForgotPasswordPage(
         onBack: () => setState(() => forgotPassword = false),
-        subtitle: 'Digite seu e-mail profissional para receber o link de recuperação',
+        subtitle:
+            'Digite seu e-mail profissional para receber o link de recuperação',
         primaryColor: BColors.green,
         showAppBar: true,
       );
@@ -43,7 +82,8 @@ class _LoginProviderScreenState extends State<LoginProviderScreen> {
           TextInputType.emailAddress,
           false,
           controller: emailController,
-          errorText: loginFailed ? 'E-mail de prestador nao encontrado' : null,
+          errorText: emailError,
+          onChanged: (_) => setState(() => emailError = null),
         ),
         FieldSpec(
           Icons.lock_outline_rounded,
@@ -51,16 +91,19 @@ class _LoginProviderScreenState extends State<LoginProviderScreen> {
           TextInputType.visiblePassword,
           true,
           controller: passwordController,
-          errorText: loginFailed ? 'Senha incorreta ou cadastro inexistente' : null,
+          errorText: passwordError,
+          onChanged: (_) => setState(() => passwordError = null),
         ),
       ],
       forgot: TextButton(
         onPressed: () => setState(() => forgotPassword = true),
-        child: const Text('Esqueceu a senha?', style: TextStyle(color: BColors.green)),
+        child: const Text('Esqueceu a senha?',
+            style: TextStyle(color: BColors.green)),
       ),
-      primaryLabel: 'Entrar',
+      socialActions: const _SocialLoginButtons(),
+      primaryLabel: loading ? 'Entrando...' : 'Entrar',
       primaryColor: BColors.green,
-      onPrimary: () => setState(() => loginFailed = true),
+      onPrimary: loading ? () {} : _login,
       footer: _AuthFooter(
         text: 'Não tem uma conta?',
         action: 'Criar conta de prestador',

@@ -15,6 +15,7 @@ CREATE TABLE users (
   full_name     TEXT NOT NULL,
   role          TEXT NOT NULL CHECK (role IN ('morador', 'prestador')),
   phone         TEXT,
+  cpf           TEXT,
   neighborhood  TEXT,
   city          TEXT,
   state         TEXT,

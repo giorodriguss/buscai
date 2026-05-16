@@ -1,4 +1,4 @@
-part of '../figma_flow.dart';
+﻿part of '../figma_flow.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});

@@ -4,31 +4,55 @@ class SignupProviderScreen extends ConsumerStatefulWidget {
   const SignupProviderScreen({super.key});
 
   @override
-  ConsumerState<SignupProviderScreen> createState() => _SignupProviderScreenState();
+  ConsumerState<SignupProviderScreen> createState() =>
+      _SignupProviderScreenState();
 }
 
 class _SignupProviderScreenState extends ConsumerState<SignupProviderScreen>
     with DebouncedValidationMixin<SignupProviderScreen> {
   final nameController = TextEditingController();
   final emailController = TextEditingController();
+  final cpfController = TextEditingController();
   final phoneController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
   final validation = <String>{};
+  String? apiEmailError;
+  String? apiCpfError;
+  String? apiPhoneError;
   late String selectedCategory;
 
-  String? get emailError => FormValidators.email(emailController.text.trim());
-  String? get phoneError => FormValidators.phone(phoneController.text.trim());
-  String? get passwordError => FormValidators.password(passwordController.text);
-  String? get confirmPasswordError =>
-      FormValidators.confirmPassword(confirmPasswordController.text, passwordController.text);
+  String? get nameError =>
+      nameController.text.trim().isEmpty ? 'Informe o nome completo' : null;
+  String? get emailError =>
+      apiEmailError ??
+      (emailController.text.trim().isEmpty
+          ? 'Informe o e-mail'
+          : FormValidators.email(emailController.text.trim()));
+  String? get cpfError =>
+      apiCpfError ??
+      (cpfController.text.trim().isEmpty
+          ? 'Informe o CPF'
+          : FormValidators.cpf(cpfController.text.trim()));
+  String? get phoneError =>
+      apiPhoneError ??
+      (phoneController.text.trim().isEmpty
+          ? 'Informe o telefone'
+          : FormValidators.phone(phoneController.text.trim()));
+  String? get passwordError => passwordController.text.isEmpty
+      ? 'Informe a senha'
+      : FormValidators.password(passwordController.text);
+  String? get confirmPasswordError => confirmPasswordController.text.isEmpty
+      ? 'Confirme a senha'
+      : FormValidators.confirmPassword(
+          confirmPasswordController.text, passwordController.text);
 
   void _showValidation(String field) => setState(() => validation.add(field));
 
   @override
   void initState() {
     super.initState();
-    selectedCategory = ref.read(collaboratorProvider).category;
+    selectedCategory = CategorySelectionScreen.categories.first;
   }
 
   @override
@@ -36,58 +60,60 @@ class _SignupProviderScreenState extends ConsumerState<SignupProviderScreen>
     cancelValidationDebounce();
     nameController.dispose();
     emailController.dispose();
+    cpfController.dispose();
     phoneController.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();
     super.dispose();
   }
 
-  void _createProviderAccount() {
-    final name = nameController.text.trim();
+  void _createProviderAccount() => _doCreateProviderAccount();
+
+  Future<void> _doCreateProviderAccount() async {
+    final invalidFields = <String>{
+      if (nameError != null) 'name',
+      if (emailError != null) 'email',
+      if (cpfError != null) 'cpf',
+      if (phoneError != null) 'phone',
+      if (passwordError != null) 'password',
+      if (confirmPasswordError != null) 'confirm',
+    };
+    if (invalidFields.isNotEmpty) {
+      setState(() => validation.addAll(invalidFields));
+      return;
+    }
+
     final email = emailController.text.trim();
-    final phone = phoneController.text.trim();
     final password = passwordController.text;
-    if (name.isEmpty || email.isEmpty || phone.isEmpty || password.isEmpty) {
-      setState(() => validation.addAll(['email', 'phone', 'password', 'confirm']));
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Preencha nome, e-mail, telefone e senha.')),
+    try {
+      await AuthRepository.registerProvider(
+        fullName: nameController.text.trim(),
+        email: email,
+        password: password,
+        cpf: cpfController.text.trim(),
+        phone: phoneController.text.trim(),
       );
-      return;
-    }
-    if (!_isValidEmail(email)) {
-      setState(() => validation.add('email'));
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Use um e-mail válido no formato nome@email.com.')),
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => EmailConfirmationSentScreen(
+            email: email,
+            password: password,
+            providerCategory: selectedCategory,
+          ),
+        ),
       );
-      return;
+    } on DioException catch (e) {
+      final errors = _authFieldErrors(e);
+      if (mounted && errors.isNotEmpty) {
+        setState(() {
+          validation.addAll(errors.keys);
+          apiEmailError = errors['email'] ?? apiEmailError;
+          apiCpfError = errors['cpf'] ?? apiCpfError;
+          apiPhoneError = errors['phone'] ?? apiPhoneError;
+        });
+      }
     }
-    if (!_isValidPhone(phone)) {
-      setState(() => validation.add('phone'));
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Use telefone no formato 00 90000-0000.')),
-      );
-      return;
-    }
-    if (password.length < 6 || password.length > 12) {
-      setState(() => validation.add('password'));
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('A senha deve ter de 6 a 12 caracteres.')),
-      );
-      return;
-    }
-    if (confirmPasswordController.text != password) {
-      setState(() => validation.add('confirm'));
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('As senhas não conferem.')),
-      );
-      return;
-    }
-    final user = AppUser(name: name, email: email, phone: phone, isProvider: true);
-    ref.read(collaboratorProvider.notifier).reset(selectedCategory);
-    ref.read(sessionProvider.notifier).setUser(user);
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => MainShell(user: user)),
-    );
   }
 
   @override
@@ -115,9 +141,12 @@ class _SignupProviderScreenState extends ConsumerState<SignupProviderScreen>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Seja um prestador', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+                        Text('Seja um prestador',
+                            style: TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.w700)),
                         SizedBox(height: 3),
-                        Text('Cadastre-se e receba clientes', style: TextStyle(color: BColors.gray)),
+                        Text('Cadastre-se e receba clientes',
+                            style: TextStyle(color: BColors.gray)),
                       ],
                     ),
                   ),
@@ -125,7 +154,8 @@ class _SignupProviderScreenState extends ConsumerState<SignupProviderScreen>
               ),
             ),
             const SizedBox(height: 26),
-            const Text('Categoria profissional', style: TextStyle(fontWeight: FontWeight.w700)),
+            const Text('Categoria profissional',
+                style: TextStyle(fontWeight: FontWeight.w700)),
             const SizedBox(height: 12),
             TextInputLike(
               icon: Icons.work_outline_rounded,
@@ -134,9 +164,12 @@ class _SignupProviderScreenState extends ConsumerState<SignupProviderScreen>
               suffixIcon: Icons.keyboard_arrow_down_rounded,
               onTap: () async {
                 final category = await Navigator.of(context).push<String>(
-                  MaterialPageRoute(builder: (_) => const CategorySelectionScreen()),
+                  MaterialPageRoute(
+                      builder: (_) => const CategorySelectionScreen()),
                 );
-                if (category != null) setState(() => selectedCategory = category);
+                if (category != null) {
+                  setState(() => selectedCategory = category);
+                }
               },
             ),
             const SizedBox(height: 16),
@@ -145,6 +178,9 @@ class _SignupProviderScreenState extends ConsumerState<SignupProviderScreen>
               hint: 'Nome completo',
               keyboardType: TextInputType.name,
               controller: nameController,
+              errorText: validation.contains('name') ? nameError : null,
+              onChanged: (_) => queueValidation(validation, 'name'),
+              onEditingComplete: () => _showValidation('name'),
             ),
             const SizedBox(height: 16),
             TextInputLike(
@@ -153,8 +189,25 @@ class _SignupProviderScreenState extends ConsumerState<SignupProviderScreen>
               keyboardType: TextInputType.emailAddress,
               controller: emailController,
               errorText: validation.contains('email') ? emailError : null,
-              onChanged: (_) => queueValidation(validation, 'email'),
+              onChanged: (_) {
+                apiEmailError = null;
+                queueValidation(validation, 'email');
+              },
               onEditingComplete: () => _showValidation('email'),
+            ),
+            const SizedBox(height: 16),
+            TextInputLike(
+              icon: Icons.badge_outlined,
+              hint: '000.000.000-00',
+              keyboardType: TextInputType.number,
+              controller: cpfController,
+              errorText: validation.contains('cpf') ? cpfError : null,
+              inputFormatters: const [CpfInputFormatter()],
+              onChanged: (_) {
+                apiCpfError = null;
+                queueValidation(validation, 'cpf');
+              },
+              onEditingComplete: () => _showValidation('cpf'),
             ),
             const SizedBox(height: 16),
             TextInputLike(
@@ -164,15 +217,35 @@ class _SignupProviderScreenState extends ConsumerState<SignupProviderScreen>
               controller: phoneController,
               errorText: validation.contains('phone') ? phoneError : null,
               inputFormatters: const [PhoneInputFormatter()],
-              onChanged: (_) => queueValidation(validation, 'phone'),
+              onChanged: (_) {
+                apiPhoneError = null;
+                queueValidation(validation, 'phone');
+              },
               onEditingComplete: () => _showValidation('phone'),
             ),
             const SizedBox(height: 16),
-            const TextInputLike(icon: Icons.location_on_outlined, hint: 'Seu bairro'),
+            TextInputLike(
+              icon: Icons.lock_outline_rounded,
+              hint: 'Senha',
+              obscure: true,
+              controller: passwordController,
+              errorText: validation.contains('password') ? passwordError : null,
+              inputFormatters: [LengthLimitingTextInputFormatter(12)],
+              onChanged: (_) => queueValidation(validation, 'password'),
+              onEditingComplete: () => _showValidation('password'),
+            ),
             const SizedBox(height: 16),
-            TextInputLike(icon: Icons.lock_outline_rounded, hint: 'Senha', obscure: true, controller: passwordController, errorText: validation.contains('password') ? passwordError : null, inputFormatters: [LengthLimitingTextInputFormatter(12)], onChanged: (_) => queueValidation(validation, 'password'), onEditingComplete: () => _showValidation('password')),
-            const SizedBox(height: 16),
-            TextInputLike(icon: Icons.lock_outline_rounded, hint: 'Confirmar senha', obscure: true, controller: confirmPasswordController, errorText: validation.contains('confirm') ? confirmPasswordError : null, inputFormatters: [LengthLimitingTextInputFormatter(12)], onChanged: (_) => queueValidation(validation, 'confirm'), onEditingComplete: () => _showValidation('confirm')),
+            TextInputLike(
+              icon: Icons.lock_outline_rounded,
+              hint: 'Confirmar senha',
+              obscure: true,
+              controller: confirmPasswordController,
+              errorText:
+                  validation.contains('confirm') ? confirmPasswordError : null,
+              inputFormatters: [LengthLimitingTextInputFormatter(12)],
+              onChanged: (_) => queueValidation(validation, 'confirm'),
+              onEditingComplete: () => _showValidation('confirm'),
+            ),
             const SizedBox(height: 32),
             PrimaryButton(
               label: 'Criar conta de prestador',
